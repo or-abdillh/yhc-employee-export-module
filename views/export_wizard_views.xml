@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Wizard Views untuk Export Data Karyawan
+    
+    Wizard ini menyediakan antarmuka untuk:
+    - Memilih metode export (template/konfigurasi/kustom)
+    - Menentukan kategori data yang akan di-export
+    - Menerapkan filter
+    - Preview dan download hasil export
+-->
+<odoo>
+    <data>
+        
+        <!-- Form View: Export Wizard -->
+        <record id="view_hr_employee_export_wizard_form" model="ir.ui.view">
+            <field name="name">hr.employee.export.wizard.form</field>
+            <field name="model">hr.employee.export.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Export Data Karyawan">
+                    <!-- State: Draft - Form Input -->
+                    <div invisible="state != 'draft'">
+                        <group>
+                            <group string="Metode Export">
+                                <field name="export_method" widget="radio"/>
+                                <field name="template_id" 
+                                       invisible="export_method != 'template'"
+                                       required="export_method == 'template'"
+                                       options="{'no_create': True}"/>
+                                <field name="config_id" 
+                                       invisible="export_method != 'config'"
+                                       required="export_method == 'config'"
+                                       options="{'no_create': True}"/>
+                            </group>
+                            <group string="Format Export">
+                                <field name="export_type" widget="radio" options="{'horizontal': true}"/>
+                                <field name="csv_delimiter" invisible="export_type != 'csv'"/>
+                            </group>
+                        </group>
+                        
+                        <!-- Kategori Data (hanya untuk custom) -->
+                        <group string="Kategori Data" invisible="export_method != 'custom'">
+                            <group>
+                                <field name="include_identity" widget="boolean_toggle"/>
+                                <field name="include_employment" widget="boolean_toggle"/>
+                                <field name="include_family" widget="boolean_toggle"/>
+                                <field name="include_education" widget="boolean_toggle"/>
+                            </group>
+                            <group>
+                                <field name="include_bpjs" widget="boolean_toggle"/>
+                                <field name="include_payroll" widget="boolean_toggle"/>
+                                <field name="include_training" widget="boolean_toggle"/>
+                                <field name="include_reward_punishment" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Filter Data">
+                            <group>
+                                <field name="department_ids" widget="many2many_tags"
+                                       options="{'color_field': 'color'}"
+                                       placeholder="Semua departemen..."/>
+                                <field name="employment_status"/>
+                            </group>
+                            <group>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="include_inactive" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Simpan Pengaturan" invisible="export_method == 'config'">
+                            <group>
+                                <field name="save_as_config" widget="boolean_toggle"/>
+                                <field name="new_config_name" 
+                                       invisible="not save_as_config"
+                                       required="save_as_config"
+                                       placeholder="Nama konfigurasi baru..."/>
+                            </group>
+                        </group>
+                        
+                        <div class="alert alert-info">
+                            <strong><i class="fa fa-database"/> Jumlah Data:</strong>
+                            <field name="preview_count" readonly="1" class="oe_inline"/> karyawan akan di-export
+                        </div>
+                        
+                        <field name="state" invisible="1"/>
+                    </div>
+                    
+                    <!-- State: Preview -->
+                    <div invisible="state != 'preview'">
+                        <div class="alert alert-info mb-3">
+                            <strong><i class="fa fa-eye"/> Preview Data</strong>
+                            <p class="mb-0">Berikut adalah contoh 10 data pertama yang akan di-export:</p>
+                        </div>
+                        
+                        <field name="preview_html" readonly="1"/>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <strong><i class="fa fa-info-circle"/> Total:</strong>
+                            <field name="preview_count" readonly="1" class="oe_inline"/> data akan di-export
+                            dalam format <field name="export_type" readonly="1" class="oe_inline"/>
+                        </div>
+                    </div>
+                    
+                    <!-- State: Done -->
+                    <div invisible="state != 'done'">
+                        <div class="alert alert-success text-center">
+                            <h3><i class="fa fa-check-circle"/> Export Berhasil!</h3>
+                            <p>File export telah dibuat. Klik tombol download untuk mengunduh file.</p>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a t-att-href="'/web/content?model=hr.employee.export.wizard&amp;id=' + str(id) + '&amp;field=output_file&amp;filename=' + (output_filename or 'export.xlsx') + '&amp;download=true'"
+                               class="btn btn-primary btn-lg">
+                                <i class="fa fa-download"/> Download File
+                            </a>
+                        </div>
+                        
+                        <field name="output_file" invisible="1"/>
+                        <field name="output_filename" invisible="1"/>
+                    </div>
+                    
+                    <footer>
+                        <!-- State Draft buttons -->
+                        <button name="action_preview" type="object" 
+                                string="Preview" class="btn-secondary"
+                                invisible="state != 'draft'" icon="fa-eye"/>
+                        <button name="action_export" type="object" 
+                                string="Export" class="btn-primary"
+                                invisible="state != 'draft'" icon="fa-download"/>
+                        <button name="action_view_employees" type="object"
+                                string="Lihat Karyawan" class="btn-secondary"
+                                invisible="state != 'draft'" icon="fa-users"/>
+                        
+                        <!-- State Preview buttons -->
+                        <button name="action_back" type="object"
+                                string="Kembali" class="btn-secondary"
+                                invisible="state != 'preview'" icon="fa-arrow-left"/>
+                        <button name="action_export" type="object"
+                                string="Export Sekarang" class="btn-primary"
+                                invisible="state != 'preview'" icon="fa-download"/>
+                        
+                        <!-- State Done buttons -->
+                        <button string="Tutup" class="btn-secondary" special="cancel"
+                                invisible="state != 'done'"/>
+                        
+                        <!-- Cancel button for all states -->
+                        <button string="Batal" class="btn-secondary" special="cancel"
+                                invisible="state == 'done'"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Action: Open Export Wizard -->
+        <record id="action_hr_employee_export_wizard" model="ir.actions.act_window">
+            <field name="name">Export Data Karyawan</field>
+            <field name="res_model">hr.employee.export.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_hr_employee_export_wizard_form"/>
+            <field name="target">new</field>
+            <field name="context">{}</field>
+        </record>
+        
+    </data>
+</odoo>

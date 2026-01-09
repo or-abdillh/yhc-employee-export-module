@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default Data untuk yhc_employee_export
+    
+    File ini berisi data default template export yang akan
+    di-load saat module diinstall.
+-->
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Template: Laporan Demografi -->
+        <record id="template_demographic" model="hr.employee.export.template">
+            <field name="name">Laporan Demografi Karyawan</field>
+            <field name="code">T01_DEMOGRAPHIC</field>
+            <field name="template_type">demographic</field>
+            <field name="sequence">10</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export data demografis karyawan (gender, usia, agama, status pernikahan)</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "nik": "NIK",
+  "place_of_birth": "Tempat Lahir",
+  "birthday": "Tanggal Lahir",
+  "age": "Usia",
+  "gender": "Jenis Kelamin",
+  "religion": "Agama",
+  "blood_type": "Golongan Darah",
+  "status_kawin": "Status Pernikahan"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Kepegawaian -->
+        <record id="template_employment" model="hr.employee.export.template">
+            <field name="name">Laporan Kepegawaian</field>
+            <field name="code">T02_EMPLOYMENT</field>
+            <field name="template_type">employment</field>
+            <field name="sequence">20</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export data kepegawaian (departemen, jabatan, golongan, status)</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "department_id.name": "Unit Kerja",
+  "job_id.name": "Jabatan",
+  "area_kerja_id.name": "Area Kerja",
+  "golongan_id.name": "Golongan",
+  "grade_id.name": "Grade",
+  "employee_type_id.name": "Tipe Pegawai",
+  "employee_category_id.name": "Jenis Pegawai",
+  "employment_status": "Status Kepegawaian",
+  "first_contract_date": "Tanggal Masuk",
+  "service_length": "Masa Kerja (Tahun)"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan BPJS -->
+        <record id="template_bpjs" model="hr.employee.export.template">
+            <field name="name">Laporan BPJS</field>
+            <field name="code">T03_BPJS</field>
+            <field name="template_type">bpjs</field>
+            <field name="sequence">30</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export data BPJS Kesehatan dan Ketenagakerjaan</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "nik": "NIK",
+  "bpjs_ids.bpjs_type": "Jenis BPJS",
+  "bpjs_ids.number": "Nomor BPJS",
+  "bpjs_ids.faskes_tk1": "Faskes Tingkat 1",
+  "bpjs_ids.kelas": "Kelas BPJS"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Pendidikan -->
+        <record id="template_education" model="hr.employee.export.template">
+            <field name="name">Laporan Pendidikan</field>
+            <field name="code">T04_EDUCATION</field>
+            <field name="template_type">education</field>
+            <field name="sequence">40</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export riwayat pendidikan karyawan</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "education_ids.certificate": "Jenjang Pendidikan",
+  "education_ids.study_school": "Institusi",
+  "education_ids.major": "Jurusan",
+  "education_ids.date_start": "Tahun Masuk",
+  "education_ids.date_end": "Tahun Lulus"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Payroll -->
+        <record id="template_payroll" model="hr.employee.export.template">
+            <field name="name">Laporan Payroll</field>
+            <field name="code">T05_PAYROLL</field>
+            <field name="template_type">payroll</field>
+            <field name="sequence">50</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export data rekening bank dan NPWP</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "nik": "NIK",
+  "payroll_id.bank_name": "Nama Bank",
+  "payroll_id.bank_account": "Nomor Rekening",
+  "payroll_id.npwp": "NPWP",
+  "payroll_id.efin": "EFIN"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Keluarga -->
+        <record id="template_family" model="hr.employee.export.template">
+            <field name="name">Laporan Keluarga</field>
+            <field name="code">T06_FAMILY</field>
+            <field name="template_type">family</field>
+            <field name="sequence">60</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export data tanggungan (pasangan dan anak)</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "status_kawin": "Status Pernikahan",
+  "spouse_name": "Nama Pasangan",
+  "spouse_nik": "NIK Pasangan",
+  "spouse_birthday": "Tanggal Lahir Pasangan",
+  "jlh_anggota_keluarga": "Jumlah Anggota Keluarga"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Pelatihan -->
+        <record id="template_training" model="hr.employee.export.template">
+            <field name="name">Laporan Pelatihan</field>
+            <field name="code">T07_TRAINING</field>
+            <field name="template_type">training</field>
+            <field name="sequence">70</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export rekap pelatihan dan sertifikasi</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "department_id.name": "Unit Kerja",
+  "training_certificate_ids.name": "Nama Pelatihan",
+  "training_certificate_ids.jenis_pelatihan": "Jenis Pelatihan",
+  "training_certificate_ids.metode": "Metode",
+  "training_certificate_ids.date_start": "Tanggal Mulai",
+  "training_certificate_ids.date_end": "Tanggal Selesai"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Reward & Punishment -->
+        <record id="template_reward_punishment" model="hr.employee.export.template">
+            <field name="name">Laporan Reward &amp; Punishment</field>
+            <field name="code">T08_REWARD_PUNISHMENT</field>
+            <field name="template_type">reward_punishment</field>
+            <field name="sequence">80</field>
+            <field name="is_system">True</field>
+            <field name="description">Template untuk export rekap penghargaan dan sanksi</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "department_id.name": "Unit Kerja",
+  "reward_punishment_ids.type": "Tipe",
+  "reward_punishment_ids.name": "Nama",
+  "reward_punishment_ids.date": "Tanggal",
+  "reward_punishment_ids.description": "Keterangan"
+}</field>
+        </record>
+        
+        <!-- Template: Laporan Lengkap -->
+        <record id="template_complete" model="hr.employee.export.template">
+            <field name="name">Laporan Karyawan Lengkap</field>
+            <field name="code">T09_COMPLETE</field>
+            <field name="template_type">complete</field>
+            <field name="sequence">90</field>
+            <field name="is_system">True</field>
+            <field name="description">Template master data lengkap seluruh karyawan</field>
+            <field name="field_mapping">{
+  "nrp": "NRP",
+  "name": "Nama Lengkap",
+  "nik": "NIK",
+  "place_of_birth": "Tempat Lahir",
+  "birthday": "Tanggal Lahir",
+  "age": "Usia",
+  "gender": "Jenis Kelamin",
+  "religion": "Agama",
+  "status_kawin": "Status Pernikahan",
+  "department_id.name": "Unit Kerja",
+  "job_id.name": "Jabatan",
+  "golongan_id.name": "Golongan",
+  "grade_id.name": "Grade",
+  "employment_status": "Status Kepegawaian",
+  "first_contract_date": "Tanggal Masuk",
+  "service_length": "Masa Kerja"
+}</field>
+        </record>
+        
+        <!-- Template: Format Regulasi BPJS Kesehatan -->
+        <record id="template_regulatory_bpjs_kes" model="hr.employee.export.template">
+            <field name="name">Format BPJS Kesehatan</field>
+            <field name="code">R01_BPJS_KES</field>
+            <field name="template_type">regulatory</field>
+            <field name="regulatory_type">bpjs_kes</field>
+            <field name="sequence">100</field>
+            <field name="is_system">True</field>
+            <field name="description">Template export sesuai format upload BPJS Kesehatan (e-Dabu)</field>
+            <field name="field_mapping">{
+  "nik": "NIK",
+  "name": "NAMA",
+  "birthday": "TGL_LAHIR",
+  "gender": "JK",
+  "bpjs_ids.number": "NO_BPJS",
+  "bpjs_ids.faskes_tk1": "KODE_FASKES",
+  "bpjs_ids.kelas": "KELAS"
+}</field>
+        </record>
+        
+        <!-- Template: Format Regulasi BPJS Ketenagakerjaan -->
+        <record id="template_regulatory_bpjs_tk" model="hr.employee.export.template">
+            <field name="name">Format BPJS Ketenagakerjaan</field>
+            <field name="code">R02_BPJS_TK</field>
+            <field name="template_type">regulatory</field>
+            <field name="regulatory_type">bpjs_tk</field>
+            <field name="sequence">110</field>
+            <field name="is_system">True</field>
+            <field name="description">Template export sesuai format SIPP Online BPJS Ketenagakerjaan</field>
+            <field name="field_mapping">{
+  "nik": "NIK",
+  "name": "NAMA",
+  "birthday": "TGL_LAHIR",
+  "bpjs_ids.number": "NO_KPJ",
+  "first_contract_date": "TGL_MASUK"
+}</field>
+        </record>
+        
+    </data>
+</odoo>

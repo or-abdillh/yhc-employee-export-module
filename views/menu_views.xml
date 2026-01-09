@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Menu items untuk yhc_employee_export
+    
+    Struktur Menu:
+    - HR Employee Export (root menu)
+      ├── Dashboard
+      ├── Export Data
+      │   ├── Wizard Export
+      │   └── Riwayat Export
+      └── Konfigurasi
+          ├── Konfigurasi Export
+          └── Template Export
+-->
+<odoo>
+    <data>
+        
+        <!-- Root Menu: HR Employee Export & Analytics -->
+        <menuitem
+            id="menu_hr_employee_export_root"
+            name="Export &amp; Analytics"
+            parent="hr.menu_hr_root"
+            sequence="30"
+            groups="group_hr_export_user"
+        />
+        
+        <!-- Menu: Dashboard -->
+        <menuitem
+            id="menu_hr_employee_dashboard"
+            name="Dashboard"
+            parent="menu_hr_employee_export_root"
+            sequence="10"
+            action="action_hr_employee_dashboard"
+            groups="group_hr_export_user"
+        />
+        
+        <!-- Submenu: Export Data -->
+        <menuitem
+            id="menu_hr_employee_export"
+            name="Export Data"
+            parent="menu_hr_employee_export_root"
+            sequence="20"
+            groups="group_hr_export_user"
+        />
+        
+        <!-- Menu: Wizard Export -->
+        <menuitem
+            id="menu_hr_employee_export_wizard"
+            name="Export Karyawan"
+            parent="menu_hr_employee_export"
+            action="action_hr_employee_export_wizard"
+            sequence="10"
+            groups="group_hr_export_user"
+        />
+        
+        <!-- Submenu: Konfigurasi -->
+        <menuitem
+            id="menu_hr_employee_export_config"
+            name="Konfigurasi"
+            parent="menu_hr_employee_export_root"
+            sequence="30"
+            groups="group_hr_export_officer"
+        />
+        
+        <!-- Menu: Konfigurasi Export -->
+        <menuitem
+            id="menu_hr_employee_export_config_list"
+            name="Konfigurasi Export"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_export_config"
+            sequence="10"
+            groups="group_hr_export_officer"
+        />
+        
+        <!-- Menu: Template Export -->
+        <menuitem
+            id="menu_hr_employee_export_template_list"
+            name="Template Export"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_export_template"
+            sequence="20"
+            groups="group_hr_export_officer"
+        />
+        
+        <!-- Menu: Audit Log -->
+        <menuitem
+            id="menu_hr_employee_export_audit_log"
+            name="Audit Log"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_export_audit_log"
+            sequence="30"
+            groups="group_hr_export_manager"
+        />
+        
+        <!-- ========== ACTIONS ========== -->
+        
+        <!-- Action: Dashboard (Client Action untuk OWL component) -->
+        <record id="action_hr_employee_dashboard" model="ir.actions.client">
+            <field name="name">Dashboard Karyawan</field>
+            <field name="tag">hr_employee_dashboard</field>
+            <field name="target">main</field>
+        </record>
+        
+        <!-- Action: Konfigurasi Export -->
+        <record id="action_hr_employee_export_config" model="ir.actions.act_window">
+            <field name="name">Konfigurasi Export</field>
+            <field name="res_model">hr.employee.export.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Buat konfigurasi export pertama Anda!
+                </p>
+                <p>
+                    Konfigurasi export memungkinkan Anda menyimpan pengaturan
+                    export yang sering digunakan untuk dipakai kembali.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Action: Template Export -->
+        <record id="action_hr_employee_export_template" model="ir.actions.act_window">
+            <field name="name">Template Export</field>
+            <field name="res_model">hr.employee.export.template</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Buat template export pertama Anda!
+                </p>
+                <p>
+                    Template export mendefinisikan field-field yang akan
+                    diekspor dan format headernya.
+                </p>
+            </field>
+        </record>
+        
+        <!-- ========== VIEWS: Export Config ========== -->
+        
+        <!-- Tree View: Export Config -->
+        <record id="view_hr_employee_export_config_tree" model="ir.ui.view">
+            <field name="name">hr.employee.export.config.tree</field>
+            <field name="model">hr.employee.export.config</field>
+            <field name="arch" type="xml">
+                <tree string="Konfigurasi Export" decoration-info="is_default">
+                    <field name="name"/>
+                    <field name="export_type" widget="badge" 
+                           decoration-info="export_type == 'xlsx'"
+                           decoration-success="export_type == 'csv'"
+                           decoration-warning="export_type == 'pdf'"
+                           decoration-danger="export_type == 'json'"/>
+                    <field name="selected_categories_count" string="Kategori"/>
+                    <field name="filter_summary" string="Filter"/>
+                    <field name="is_default" widget="boolean_toggle"/>
+                    <field name="active" column_invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form View: Export Config -->
+        <record id="view_hr_employee_export_config_form" model="ir.ui.view">
+            <field name="name">hr.employee.export.config.form</field>
+            <field name="model">hr.employee.export.config</field>
+            <field name="arch" type="xml">
+                <form string="Konfigurasi Export">
+                    <header>
+                        <button name="action_export_now" type="object" 
+                                string="Export Sekarang" class="btn-primary"
+                                icon="fa-download"/>
+                        <button name="action_preview_employees" type="object"
+                                string="Preview Karyawan" class="btn-secondary"
+                                icon="fa-eye"/>
+                        <button name="action_set_default" type="object"
+                                string="Jadikan Default" class="btn-secondary"
+                                invisible="is_default"
+                                icon="fa-star"/>
+                        <button name="action_duplicate_config" type="object"
+                                string="Duplikasi" class="btn-secondary"
+                                icon="fa-copy"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object" class="oe_stat_button"
+                                    icon="fa-archive">
+                                <field name="active" widget="boolean_button"
+                                       options="{'terminology': 'archive'}"/>
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" title="Default" bg_color="text-bg-success"
+                                invisible="not is_default"/>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder="Nama Konfigurasi"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Pengaturan Dasar">
+                                <field name="export_type" widget="radio" options="{'horizontal': true}"/>
+                                <field name="csv_delimiter" invisible="export_type != 'csv'"/>
+                                <field name="is_default" invisible="1"/>
+                            </group>
+                            <group string="Statistik">
+                                <field name="selected_categories_count" readonly="1"/>
+                                <field name="filter_summary" readonly="1"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Kategori Data" name="categories">
+                                <group>
+                                    <group string="Data Utama">
+                                        <field name="include_identity" widget="boolean_toggle"/>
+                                        <field name="include_employment" widget="boolean_toggle"/>
+                                        <field name="include_family" widget="boolean_toggle"/>
+                                        <field name="include_education" widget="boolean_toggle"/>
+                                    </group>
+                                    <group string="Data Tambahan">
+                                        <field name="include_bpjs" widget="boolean_toggle"/>
+                                        <field name="include_payroll" widget="boolean_toggle"/>
+                                        <field name="include_training" widget="boolean_toggle"/>
+                                        <field name="include_reward_punishment" widget="boolean_toggle"/>
+                                    </group>
+                                </group>
+                                <div class="alert alert-info" role="alert">
+                                    <strong><i class="fa fa-info-circle"/> Informasi:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>Data Identitas:</strong> NRP, NIK, Nama, TTL, Gender, Agama, Golongan Darah</li>
+                                        <li><strong>Data Kepegawaian:</strong> Departemen, Jabatan, Golongan, Grade, Status, Masa Kerja</li>
+                                        <li><strong>Data Keluarga:</strong> Pasangan, Anak, Orang Tua, Jumlah Tanggungan</li>
+                                        <li><strong>Data BPJS:</strong> BPJS Kesehatan, BPJS Ketenagakerjaan, Faskes</li>
+                                        <li><strong>Data Pendidikan:</strong> Riwayat Pendidikan, Jenjang, Institusi, Jurusan</li>
+                                        <li><strong>Data Payroll:</strong> Bank, Nomor Rekening, NPWP, EFIN</li>
+                                        <li><strong>Data Pelatihan:</strong> Sertifikat, Nama Pelatihan, Jenis, Metode</li>
+                                        <li><strong>Data Reward &amp; Punishment:</strong> Penghargaan, Sanksi, Tanggal</li>
+                                    </ul>
+                                </div>
+                            </page>
+                            
+                            <page string="Filter" name="filters">
+                                <group>
+                                    <group string="Filter Departemen">
+                                        <field name="department_ids" widget="many2many_tags"
+                                               placeholder="Pilih departemen (kosongkan untuk semua)..."
+                                               options="{'color_field': 'color'}"/>
+                                    </group>
+                                    <group string="Filter Status">
+                                        <field name="employment_status"/>
+                                        <field name="include_inactive" widget="boolean_toggle"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Filter Tanggal Masuk">
+                                        <field name="date_from"/>
+                                        <field name="date_to"/>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                            <page string="Deskripsi" name="description">
+                                <field name="description" placeholder="Deskripsi konfigurasi ini..." nolabel="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Search View: Export Config -->
+        <record id="view_hr_employee_export_config_search" model="ir.ui.view">
+            <field name="name">hr.employee.export.config.search</field>
+            <field name="model">hr.employee.export.config</field>
+            <field name="arch" type="xml">
+                <search string="Cari Konfigurasi">
+                    <field name="name"/>
+                    <field name="description"/>
+                    <separator/>
+                    <filter string="Default" name="filter_default" domain="[('is_default', '=', True)]"/>
+                    <filter string="Aktif" name="filter_active" domain="[('active', '=', True)]"/>
+                    <separator/>
+                    <filter string="Excel" name="filter_xlsx" domain="[('export_type', '=', 'xlsx')]"/>
+                    <filter string="CSV" name="filter_csv" domain="[('export_type', '=', 'csv')]"/>
+                    <filter string="PDF" name="filter_pdf" domain="[('export_type', '=', 'pdf')]"/>
+                    <filter string="JSON" name="filter_json" domain="[('export_type', '=', 'json')]"/>
+                    <separator/>
+                    <filter string="Archived" name="filter_archived" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Format Export" name="groupby_export_type" context="{'group_by': 'export_type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- ========== VIEWS: Export Template ========== -->
+        
+        <!-- Tree View: Export Template -->
+        <record id="view_hr_employee_export_template_tree" model="ir.ui.view">
+            <field name="name">hr.employee.export.template.tree</field>
+            <field name="model">hr.employee.export.template</field>
+            <field name="arch" type="xml">
+                <tree string="Template Export" decoration-muted="not active" decoration-bf="is_system">
+                    <field name="sequence" widget="handle"/>
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="template_type" widget="badge"/>
+                    <field name="field_count" string="Fields"/>
+                    <field name="is_system" widget="boolean" string="Sistem"/>
+                    <field name="active" column_invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form View: Export Template -->
+        <record id="view_hr_employee_export_template_form" model="ir.ui.view">
+            <field name="name">hr.employee.export.template.form</field>
+            <field name="model">hr.employee.export.template</field>
+            <field name="arch" type="xml">
+                <form string="Template Export">
+                    <header>
+                        <button name="action_duplicate_template" type="object"
+                                string="Duplikasi" class="btn-secondary" icon="fa-copy"/>
+                        <button name="action_reset_mapping" type="object"
+                                string="Reset Mapping" class="btn-secondary" icon="fa-refresh"
+                                confirm="Yakin ingin mereset field mapping ke default?"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="toggle_active" type="object" class="oe_stat_button"
+                                    icon="fa-archive">
+                                <field name="active" widget="boolean_button"
+                                       options="{'terminology': 'archive'}"/>
+                            </button>
+                            <button class="oe_stat_button" icon="fa-list-alt">
+                                <field name="field_count" widget="statinfo" string="Fields"/>
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" title="Template Sistem" bg_color="text-bg-info"
+                                invisible="not is_system"/>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder="Nama Template"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Informasi Template">
+                                <field name="code" readonly="is_system"/>
+                                <field name="template_type"/>
+                                <field name="regulatory_type" invisible="template_type != 'regulatory'"/>
+                                <field name="sequence"/>
+                                <field name="is_system" invisible="1"/>
+                            </group>
+                            <group string="Opsi Export">
+                                <field name="include_header" widget="boolean_toggle"/>
+                                <field name="date_format"/>
+                                <field name="empty_value"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Field Mapping" name="mapping">
+                                <field name="field_mapping" widget="ace" 
+                                       options="{'mode': 'json'}"
+                                       placeholder='{"field_name": "Header Label"}'/>
+                                <div class="alert alert-info mt-2">
+                                    <strong><i class="fa fa-info-circle"/> Petunjuk:</strong>
+                                    <p class="mb-0 mt-2">
+                                        Format JSON: <code>{"field_name": "Header Label"}</code><br/>
+                                        Contoh: <code>{"nrp": "NRP", "name": "Nama Lengkap", "department_id.name": "Departemen"}</code><br/>
+                                        Gunakan dot notation untuk relational field: <code>department_id.name</code>
+                                    </p>
+                                </div>
+                            </page>
+                            <page string="Deskripsi" name="description">
+                                <field name="description" nolabel="1" placeholder="Deskripsi template ini..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Search View: Export Template -->
+        <record id="view_hr_employee_export_template_search" model="ir.ui.view">
+            <field name="name">hr.employee.export.template.search</field>
+            <field name="model">hr.employee.export.template</field>
+            <field name="arch" type="xml">
+                <search string="Cari Template">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="description"/>
+                    <separator/>
+                    <filter string="Template Sistem" name="filter_system" domain="[('is_system', '=', True)]"/>
+                    <filter string="Template Kustom" name="filter_custom" domain="[('is_system', '=', False)]"/>
+                    <separator/>
+                    <filter string="Demografi" name="filter_demographic" domain="[('template_type', '=', 'demographic')]"/>
+                    <filter string="Kepegawaian" name="filter_employment" domain="[('template_type', '=', 'employment')]"/>
+                    <filter string="BPJS" name="filter_bpjs" domain="[('template_type', '=', 'bpjs')]"/>
+                    <filter string="Regulasi" name="filter_regulatory" domain="[('template_type', '=', 'regulatory')]"/>
+                    <separator/>
+                    <filter string="Archived" name="filter_archived" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Tipe Template" name="groupby_type" context="{'group_by': 'template_type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+    </data>
+</odoo>
