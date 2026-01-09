@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Views untuk Audit Log Export
+    
+    Views:
+    - Tree view untuk list audit log
+    - Form view untuk detail
+    - Search view dengan filter
+-->
+<odoo>
+    
+    <!-- Tree View -->
+    <record id="view_hr_employee_export_audit_log_tree" model="ir.ui.view">
+        <field name="name">hr.employee.export.audit.log.tree</field>
+        <field name="model">hr.employee.export.audit.log</field>
+        <field name="arch" type="xml">
+            <tree string="Export Audit Log" create="false" edit="false" delete="false">
+                <field name="export_date" widget="datetime"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="export_type"/>
+                <field name="template_id"/>
+                <field name="record_count"/>
+                <field name="include_sensitive" 
+                       widget="boolean"
+                       decoration-danger="include_sensitive"/>
+                <field name="status" 
+                       widget="badge"
+                       decoration-success="status == 'success'"
+                       decoration-danger="status == 'failed'"
+                       decoration-warning="status == 'partial'"/>
+                <field name="duration" widget="float_time"/>
+                <field name="ip_address"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Form View -->
+    <record id="view_hr_employee_export_audit_log_form" model="ir.ui.view">
+        <field name="name">hr.employee.export.audit.log.form</field>
+        <field name="model">hr.employee.export.audit.log</field>
+        <field name="arch" type="xml">
+            <form string="Export Audit Log" create="false" edit="false" delete="false">
+                <header>
+                    <field name="status" widget="statusbar" 
+                           statusbar_colors='{"success":"green","failed":"red","partial":"orange"}'/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Export Information">
+                            <field name="user_id"/>
+                            <field name="export_date"/>
+                            <field name="export_type"/>
+                            <field name="template_id"/>
+                        </group>
+                        <group string="Statistics">
+                            <field name="record_count"/>
+                            <field name="file_size" widget="integer"/>
+                            <field name="duration"/>
+                            <field name="include_sensitive"/>
+                        </group>
+                    </group>
+                    <group string="Technical Details">
+                        <group>
+                            <field name="ip_address"/>
+                        </group>
+                        <group>
+                            <field name="department_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <group string="Filter Domain" invisible="not filter_domain">
+                        <field name="filter_domain" colspan="2" widget="text"/>
+                    </group>
+                    <group string="Error Details" invisible="status != 'failed'">
+                        <field name="error_message" colspan="2" widget="text"/>
+                    </group>
+                    <group string="Notes" invisible="not notes">
+                        <field name="notes" colspan="2" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Search View -->
+    <record id="view_hr_employee_export_audit_log_search" model="ir.ui.view">
+        <field name="name">hr.employee.export.audit.log.search</field>
+        <field name="model">hr.employee.export.audit.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Audit Log">
+                <field name="user_id"/>
+                <field name="export_type"/>
+                <field name="template_id"/>
+                <separator/>
+                <filter string="Today" name="today" 
+                        domain="[('export_date', '>=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="This Week" name="this_week"
+                        domain="[('export_date', '>=', (context_today() - datetime.timedelta(days=7)))]"/>
+                <filter string="This Month" name="this_month"
+                        domain="[('export_date', '>=', datetime.datetime.combine(context_today().replace(day=1), datetime.time(0,0,0)))]"/>
+                <separator/>
+                <filter string="Success" name="success" domain="[('status', '=', 'success')]"/>
+                <filter string="Failed" name="failed" domain="[('status', '=', 'failed')]"/>
+                <filter string="Sensitive Data" name="sensitive" domain="[('include_sensitive', '=', True)]"/>
+                <separator/>
+                <filter string="Excel" name="xlsx" domain="[('export_type', '=', 'xlsx')]"/>
+                <filter string="CSV" name="csv" domain="[('export_type', '=', 'csv')]"/>
+                <filter string="PDF" name="pdf" domain="[('export_type', '=', 'pdf')]"/>
+                <filter string="BPJS" name="bpjs" domain="[('export_type', 'in', ['bpjs_kes', 'bpjs_tk'])]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Export Type" name="group_type" context="{'group_by': 'export_type'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'export_date:day'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'export_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Pivot View -->
+    <record id="view_hr_employee_export_audit_log_pivot" model="ir.ui.view">
+        <field name="name">hr.employee.export.audit.log.pivot</field>
+        <field name="model">hr.employee.export.audit.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Export Statistics">
+                <field name="export_type" type="row"/>
+                <field name="user_id" type="col"/>
+                <field name="record_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <!-- Graph View -->
+    <record id="view_hr_employee_export_audit_log_graph" model="ir.ui.view">
+        <field name="name">hr.employee.export.audit.log.graph</field>
+        <field name="model">hr.employee.export.audit.log</field>
+        <field name="arch" type="xml">
+            <graph string="Export Statistics" type="bar">
+                <field name="export_type"/>
+                <field name="record_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    
+    <!-- Action -->
+    <record id="action_hr_employee_export_audit_log" model="ir.actions.act_window">
+        <field name="name">Export Audit Log</field>
+        <field name="res_model">hr.employee.export.audit.log</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_hr_employee_export_audit_log_search"/>
+        <field name="context">{'search_default_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tidak ada log export
+            </p>
+            <p>
+                Log export akan muncul setelah ada aktivitas export data karyawan.
+            </p>
+        </field>
+    </record>
+    
+</odoo>
