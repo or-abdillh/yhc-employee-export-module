@@ -15,6 +15,49 @@
 <odoo>
     <data>
         
+        <!-- ========== ACTIONS (must be defined before menus) ========== -->
+        
+        <!-- Action: Dashboard (Client Action untuk OWL component) -->
+        <record id="action_hr_employee_dashboard" model="ir.actions.client">
+            <field name="name">Dashboard Karyawan</field>
+            <field name="tag">hr_employee_dashboard</field>
+            <field name="target">main</field>
+        </record>
+        
+        <!-- Action: Konfigurasi Export -->
+        <record id="action_hr_employee_export_config" model="ir.actions.act_window">
+            <field name="name">Konfigurasi Export</field>
+            <field name="res_model">hr.employee.export.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Buat konfigurasi export pertama Anda!
+                </p>
+                <p>
+                    Konfigurasi export memungkinkan Anda menyimpan pengaturan
+                    export yang sering digunakan untuk dipakai kembali.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Action: Template Export -->
+        <record id="action_hr_employee_export_template" model="ir.actions.act_window">
+            <field name="name">Template Export</field>
+            <field name="res_model">hr.employee.export.template</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Buat template export pertama Anda!
+                </p>
+                <p>
+                    Template export mendefinisikan field-field yang akan
+                    diekspor dan format headernya.
+                </p>
+            </field>
+        </record>
+        
+        <!-- ========== MENUS ========== -->
+        
         <!-- Root Menu: HR Employee Export & Analytics -->
         <menuitem
             id="menu_hr_employee_export_root"
@@ -91,48 +134,7 @@
             sequence="30"
             groups="group_hr_export_manager"
         />
-        
-        <!-- ========== ACTIONS ========== -->
-        
-        <!-- Action: Dashboard (Client Action untuk OWL component) -->
-        <record id="action_hr_employee_dashboard" model="ir.actions.client">
-            <field name="name">Dashboard Karyawan</field>
-            <field name="tag">hr_employee_dashboard</field>
-            <field name="target">main</field>
-        </record>
-        
-        <!-- Action: Konfigurasi Export -->
-        <record id="action_hr_employee_export_config" model="ir.actions.act_window">
-            <field name="name">Konfigurasi Export</field>
-            <field name="res_model">hr.employee.export.config</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Buat konfigurasi export pertama Anda!
-                </p>
-                <p>
-                    Konfigurasi export memungkinkan Anda menyimpan pengaturan
-                    export yang sering digunakan untuk dipakai kembali.
-                </p>
-            </field>
-        </record>
-        
-        <!-- Action: Template Export -->
-        <record id="action_hr_employee_export_template" model="ir.actions.act_window">
-            <field name="name">Template Export</field>
-            <field name="res_model">hr.employee.export.template</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Buat template export pertama Anda!
-                </p>
-                <p>
-                    Template export mendefinisikan field-field yang akan
-                    diekspor dan format headernya.
-                </p>
-            </field>
-        </record>
-        
+
         <!-- ========== VIEWS: Export Config ========== -->
         
         <!-- Tree View: Export Config -->

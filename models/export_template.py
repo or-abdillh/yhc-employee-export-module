@@ -130,6 +130,11 @@ class HrEmployeeExportTemplate(models.Model):
         default=False,
         help='Template sistem tidak dapat dihapus'
     )
+    is_default = fields.Boolean(
+        string='Template Default',
+        default=False,
+        help='Template default yang tersedia untuk semua user'
+    )
 
     # ==================== Template Type ====================
     template_type = fields.Selection(
@@ -476,6 +481,5 @@ class HrEmployeeExportTemplate(models.Model):
         """Toggle status aktif template."""
         for record in self:
             record.active = not record.active
-    )
 
     # TODO: Implementasi field_mapping dan method generate di Fase 3

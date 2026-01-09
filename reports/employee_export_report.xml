@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Report Action: Employee Export -->
-    <record id="action_report_employee_export" model="ir.actions.report">
-        <field name="name">Export Data Karyawan</field>
-        <field name="model">hr.employee</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">yhc_employee_export.report_employee_export</field>
-        <field name="report_file">yhc_employee_export.report_employee_export</field>
-        <field name="paperformat_id" ref="paperformat_employee_export"/>
-        <field name="print_report_name">'Export_Karyawan_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
-    </record>
-
     <!-- Paper Format: Landscape A4 -->
     <record id="paperformat_employee_export" model="report.paperformat">
         <field name="name">Employee Export A4 Landscape</field>
@@ -24,6 +13,17 @@
         <field name="header_line" eval="False"/>
         <field name="header_spacing">20</field>
         <field name="dpi">90</field>
+    </record>
+
+    <!-- Report Action: Employee Export -->
+    <record id="action_report_employee_export" model="ir.actions.report">
+        <field name="name">Export Data Karyawan</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_employee_export</field>
+        <field name="report_file">yhc_employee_export.report_employee_export</field>
+        <field name="paperformat_id" ref="paperformat_employee_export"/>
+        <field name="print_report_name">'Export_Karyawan_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
     </record>
 
     <!-- QWeb Report Template: Employee Export -->

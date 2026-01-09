@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-"""
-Module: yhc_employee_export
-Manifest file untuk module export dan analytics data karyawan.
-
-Module ini menyediakan fitur:
-- Dashboard visualisasi data karyawan
-- Export data ke berbagai format (Excel, CSV, PDF, JSON)
-- Template laporan yang customizable
-- Format export sesuai regulasi (BPJS, Pajak)
-"""
+# Module: yhc_employee_export
+# Manifest file untuk module export dan analytics data karyawan.
+#
+# Module ini menyediakan fitur:
+# - Dashboard visualisasi data karyawan
+# - Export data ke berbagai format (Excel, CSV, PDF, JSON)
+# - Template laporan yang customizable
+# - Format export sesuai regulasi (BPJS, Pajak)
 {
     'name': 'YHC Employee Export & Analytics',
     'version': '17.0.1.0.0',
