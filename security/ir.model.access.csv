@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_employee_export_config_user,hr.employee.export.config.user,model_hr_employee_export_config,group_hr_export_user,1,0,0,0
+access_hr_employee_export_config_officer,hr.employee.export.config.officer,model_hr_employee_export_config,group_hr_export_officer,1,1,1,0
+access_hr_employee_export_config_manager,hr.employee.export.config.manager,model_hr_employee_export_config,group_hr_export_manager,1,1,1,1
+access_hr_employee_export_template_user,hr.employee.export.template.user,model_hr_employee_export_template,group_hr_export_user,1,0,0,0
+access_hr_employee_export_template_officer,hr.employee.export.template.officer,model_hr_employee_export_template,group_hr_export_officer,1,1,1,0
+access_hr_employee_export_template_manager,hr.employee.export.template.manager,model_hr_employee_export_template,group_hr_export_manager,1,1,1,1
+access_hr_employee_export_wizard_user,hr.employee.export.wizard.user,model_hr_employee_export_wizard,group_hr_export_user,1,1,1,1
+access_hr_employee_analytics_user,hr.employee.analytics.user,model_hr_employee_analytics,group_hr_export_user,1,1,1,1
+access_hr_employee_analytics_officer,hr.employee.analytics.officer,model_hr_employee_analytics,group_hr_export_officer,1,1,1,1
+access_hr_employee_analytics_manager,hr.employee.analytics.manager,model_hr_employee_analytics,group_hr_export_manager,1,1,1,1
+access_hr_employee_export_audit_log_user,hr.employee.export.audit.log.user,model_hr_employee_export_audit_log,group_hr_export_user,1,0,1,0
+access_hr_employee_export_audit_log_manager,hr.employee.export.audit.log.manager,model_hr_employee_export_audit_log,group_hr_export_manager,1,1,1,1
