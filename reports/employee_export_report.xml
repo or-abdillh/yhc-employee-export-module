@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Report Action: Employee Export -->
+    <record id="action_report_employee_export" model="ir.actions.report">
+        <field name="name">Export Data Karyawan</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_employee_export</field>
+        <field name="report_file">yhc_employee_export.report_employee_export</field>
+        <field name="paperformat_id" ref="paperformat_employee_export"/>
+        <field name="print_report_name">'Export_Karyawan_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
+    </record>
+
+    <!-- Paper Format: Landscape A4 -->
+    <record id="paperformat_employee_export" model="report.paperformat">
+        <field name="name">Employee Export A4 Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- QWeb Report Template: Employee Export -->
+    <template id="report_employee_export">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Report Header -->
+                        <div class="text-center mb-4">
+                            <h2 style="color: #714B67; margin-bottom: 0;">
+                                LAPORAN DATA KARYAWAN
+                            </h2>
+                            <p class="text-muted small">
+                                Diekspor pada <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                                oleh <span t-esc="user.name"/>
+                            </p>
+                        </div>
+
+                        <!-- Employee Summary Table -->
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr style="background-color: #714B67; color: white;">
+                                    <th class="text-center" style="width: 40px;">No</th>
+                                    <th>NRP</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>NIK</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Jabatan</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="idx" t-value="1"/>
+                                <t t-foreach="docs" t-as="emp">
+                                    <tr>
+                                        <td class="text-center" t-esc="idx"/>
+                                        <td t-esc="emp.nrp or '-'"/>
+                                        <td t-esc="emp.name"/>
+                                        <td t-esc="emp.nik or '-'"/>
+                                        <td t-esc="emp.department_id.name or '-'"/>
+                                        <td t-esc="emp.job_id.name or '-'"/>
+                                        <td t-esc="emp.employment_status or '-'"/>
+                                    </tr>
+                                    <t t-set="idx" t-value="idx + 1"/>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <!-- Summary -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p class="text-muted small">
+                                    <strong>Total Karyawan:</strong> <span t-esc="len(docs)"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action: Employee Card -->
+    <record id="action_report_employee_card" model="ir.actions.report">
+        <field name="name">Kartu Karyawan</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_employee_card</field>
+        <field name="report_file">yhc_employee_export.report_employee_card</field>
+        <field name="print_report_name">'Kartu_Karyawan_%s' % (object.nrp or object.id)</field>
+    </record>
+
+    <!-- QWeb Report Template: Employee Card -->
+    <template id="report_employee_card">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="emp">
+                <div class="page">
+                    <style>
+                        .card-container {
+                            width: 350px;
+                            margin: 50px auto;
+                            font-family: Arial, sans-serif;
+                        }
+                        .emp-card {
+                            border: 3px solid #714B67;
+                            border-radius: 15px;
+                            padding: 25px;
+                            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+                        }
+                        .card-header {
+                            text-align: center;
+                            border-bottom: 2px solid #e9ecef;
+                            padding-bottom: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .company-name {
+                            color: #714B67;
+                            font-weight: bold;
+                            font-size: 14pt;
+                        }
+                        .emp-name {
+                            font-size: 18pt;
+                            font-weight: bold;
+                            color: #333;
+                            margin: 10px 0 5px 0;
+                        }
+                        .emp-nrp {
+                            color: #666;
+                            font-size: 11pt;
+                        }
+                        .card-body {
+                            margin-top: 10px;
+                        }
+                        .info-row {
+                            margin: 10px 0;
+                        }
+                        .info-label {
+                            font-size: 9pt;
+                            color: #888;
+                            text-transform: uppercase;
+                        }
+                        .info-value {
+                            font-size: 11pt;
+                            color: #333;
+                        }
+                        .card-footer {
+                            margin-top: 20px;
+                            padding-top: 15px;
+                            border-top: 2px solid #e9ecef;
+                            text-align: center;
+                        }
+                        .emp-status {
+                            display: inline-block;
+                            padding: 5px 15px;
+                            border-radius: 15px;
+                            font-size: 10pt;
+                            font-weight: bold;
+                        }
+                        .status-aktif {
+                            background-color: #d4edda;
+                            color: #155724;
+                        }
+                        .status-nonaktif {
+                            background-color: #f8d7da;
+                            color: #721c24;
+                        }
+                    </style>
+                    
+                    <div class="card-container">
+                        <div class="emp-card">
+                            <div class="card-header">
+                                <div class="company-name" t-esc="emp.company_id.name or 'YHC'"/>
+                                <div class="emp-name" t-esc="emp.name"/>
+                                <div class="emp-nrp">NRP: <span t-esc="emp.nrp or '-'"/></div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="info-row">
+                                    <div class="info-label">Unit Kerja</div>
+                                    <div class="info-value" t-esc="emp.department_id.name or '-'"/>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Jabatan</div>
+                                    <div class="info-value" t-esc="emp.job_id.name or '-'"/>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value" t-esc="emp.work_email or '-'"/>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <span t-attf-class="emp-status #{emp.employment_status == 'Aktif' and 'status-aktif' or 'status-nonaktif'}">
+                                    <t t-esc="emp.employment_status or 'Aktif'"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action: BPJS Report -->
+    <record id="action_report_bpjs" model="ir.actions.report">
+        <field name="name">Laporan Data BPJS</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_bpjs</field>
+        <field name="report_file">yhc_employee_export.report_bpjs</field>
+        <field name="paperformat_id" ref="paperformat_employee_export"/>
+        <field name="print_report_name">'Laporan_BPJS_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
+    </record>
+
+    <!-- QWeb Report Template: BPJS -->
+    <template id="report_bpjs">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- Report Header -->
+                    <div class="text-center mb-4">
+                        <h2 style="color: #714B67; margin-bottom: 0;">
+                            LAPORAN DATA BPJS KARYAWAN
+                        </h2>
+                        <p class="text-muted small">
+                            Diekspor pada <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                        </p>
+                    </div>
+
+                    <!-- BPJS Table -->
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr style="background-color: #714B67; color: white;">
+                                <th class="text-center" style="width: 40px;">No</th>
+                                <th>NRP</th>
+                                <th>Nama Karyawan</th>
+                                <th>NIK</th>
+                                <th>Jenis BPJS</th>
+                                <th>Nomor BPJS</th>
+                                <th>Faskes TK1</th>
+                                <th>Kelas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="1"/>
+                            <t t-foreach="docs" t-as="emp">
+                                <t t-foreach="emp.bpjs_ids" t-as="bpjs">
+                                    <tr>
+                                        <td class="text-center" t-esc="idx"/>
+                                        <td t-esc="emp.nrp or '-'"/>
+                                        <td t-esc="emp.name"/>
+                                        <td t-esc="emp.nik or '-'"/>
+                                        <td t-esc="bpjs.bpjs_type or '-'"/>
+                                        <td t-esc="bpjs.number or '-'"/>
+                                        <td t-esc="bpjs.faskes_tk1 or '-'"/>
+                                        <td t-esc="bpjs.kelas or '-'"/>
+                                    </tr>
+                                    <t t-set="idx" t-value="idx + 1"/>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

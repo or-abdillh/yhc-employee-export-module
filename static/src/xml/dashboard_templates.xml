@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    OWL Templates untuk Dashboard yhc_employee_export
+    
+    Template ini mendefinisikan struktur HTML untuk dashboard
+    analytics karyawan dengan KPI cards dan chart containers.
+-->
+<templates xml:space="preserve">
+    
+    <!-- Template Utama Dashboard -->
+    <t t-name="yhc_employee_export.Dashboard">
+        <div class="o_hr_employee_dashboard">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="header-content">
+                    <h1 class="dashboard-title">
+                        <i class="fa fa-line-chart me-2"/> Dashboard Analytics Karyawan
+                    </h1>
+                    <p class="dashboard-subtitle">Visualisasi dan analisis data SDM perusahaan</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline-secondary me-2" t-on-click="onViewEmployees">
+                        <i class="fa fa-users"/> Lihat Karyawan
+                    </button>
+                    <button class="btn btn-primary" t-on-click="onExportDashboard">
+                        <i class="fa fa-download"/> Export Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label class="filter-label">Filter Departemen:</label>
+                    <select class="form-select filter-select" t-on-change="onDepartmentChange">
+                        <option value="">Semua Departemen</option>
+                        <t t-foreach="state.departments" t-as="dept" t-key="dept.id">
+                            <option t-att-value="dept.id" 
+                                    t-att-selected="state.selectedDepartment == dept.id">
+                                <t t-esc="dept.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+                <button class="btn btn-outline-primary btn-refresh" t-on-click="onRefresh">
+                    <i class="fa fa-refresh"/> Refresh Data
+                </button>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <t t-if="state.loading">
+                <div class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner"/>
+                        <p class="loading-text">Memuat data dashboard...</p>
+                    </div>
+                </div>
+            </t>
+            
+            <!-- Error Message -->
+            <t t-if="state.error">
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="fa fa-exclamation-triangle me-2"/> 
+                    <strong>Error:</strong> <t t-esc="state.error"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"/>
+                </div>
+            </t>
+            
+            <!-- KPI Cards Row 1 -->
+            <div class="kpi-container">
+                <div class="kpi-card kpi-primary">
+                    <div class="kpi-icon">
+                        <i class="fa fa-users"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.totalEmployees"/></div>
+                        <div class="kpi-label">Total Karyawan</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-success">
+                    <div class="kpi-icon">
+                        <i class="fa fa-user-check"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.activeEmployees"/></div>
+                        <div class="kpi-label">Karyawan Aktif</div>
+                        <div class="kpi-badge">
+                            <t t-esc="getActivePercentage()"/>% aktif
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-danger">
+                    <div class="kpi-icon">
+                        <i class="fa fa-user-times"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.inactiveEmployees"/></div>
+                        <div class="kpi-label">Non-Aktif</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-info">
+                    <div class="kpi-icon">
+                        <i class="fa fa-venus-mars"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="getGenderRatio()"/></div>
+                        <div class="kpi-label">Rasio L:P</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- KPI Cards Row 2 -->
+            <div class="kpi-container">
+                <div class="kpi-card kpi-purple">
+                    <div class="kpi-icon">
+                        <i class="fa fa-birthday-cake"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.avgAge"/> <small>thn</small></div>
+                        <div class="kpi-label">Rata-rata Usia</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-orange">
+                    <div class="kpi-icon">
+                        <i class="fa fa-clock-o"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.avgTenure"/> <small>thn</small></div>
+                        <div class="kpi-label">Rata-rata Masa Kerja</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-teal">
+                    <div class="kpi-icon">
+                        <i class="fa fa-user-plus"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.newHiresThisMonth"/></div>
+                        <div class="kpi-label">Karyawan Baru (Bulan Ini)</div>
+                    </div>
+                </div>
+                
+                <div class="kpi-card kpi-maroon">
+                    <div class="kpi-icon">
+                        <i class="fa fa-sign-out"/>
+                    </div>
+                    <div class="kpi-content">
+                        <div class="kpi-value"><t t-esc="state.kpiData.resignsThisMonth"/></div>
+                        <div class="kpi-label">Resign (Bulan Ini)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Container -->
+            <div class="charts-container">
+                <!-- Row 1: Gender, Age, Department -->
+                <div class="chart-row">
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-pie-chart me-2"/>Distribusi Gender
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="genderChart"/>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-bar-chart me-2"/>Distribusi Usia
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="ageChart"/>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card chart-lg">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-building me-2"/>Karyawan per Departemen (Top 10)
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="departmentChart"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 2: Education, Employment Type, Service Length -->
+                <div class="chart-row">
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-graduation-cap me-2"/>Tingkat Pendidikan
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="educationChart"/>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-id-badge me-2"/>Tipe Karyawan
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="employmentTypeChart"/>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-calendar me-2"/>Masa Kerja
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="serviceLengthChart"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Row 3: BPJS, Religion -->
+                <div class="chart-row">
+                    <div class="chart-card chart-md">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-heartbeat me-2"/>Status BPJS
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="bpjsChart"/>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card chart-md">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-star me-2"/>Distribusi Agama
+                            </h3>
+                        </div>
+                        <div class="chart-body">
+                            <canvas t-ref="religionChart"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="dashboard-footer">
+                <p class="text-muted">
+                    <i class="fa fa-info-circle"/> 
+                    Data ditampilkan berdasarkan filter yang dipilih. 
+                    Klik "Refresh Data" untuk memperbarui.
+                </p>
+            </div>
+        </div>
+    </t>
+    
+</templates>

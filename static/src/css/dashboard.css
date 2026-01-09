@@ -1,0 +1,413 @@
+/**
+ * Dashboard Stylesheet untuk yhc_employee_export
+ * 
+ * Styling untuk komponen dashboard analytics karyawan.
+ * Mengikuti design system Odoo dengan customisasi untuk module ini.
+ */
+
+/* ========== Container Utama ========== */
+.o_hr_employee_dashboard {
+    padding: 24px;
+    background-color: #f5f6f8;
+    min-height: 100vh;
+}
+
+/* ========== Header ========== */
+.o_hr_employee_dashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.o_hr_employee_dashboard .header-content {
+    flex: 1;
+}
+
+.o_hr_employee_dashboard .header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.o_hr_employee_dashboard .dashboard-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.o_hr_employee_dashboard .dashboard-title i {
+    color: #714b67;
+}
+
+.o_hr_employee_dashboard .dashboard-subtitle {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* ========== Filter Section ========== */
+.o_hr_employee_dashboard .filter-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    flex-wrap: wrap;
+}
+
+.o_hr_employee_dashboard .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.o_hr_employee_dashboard .filter-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.o_hr_employee_dashboard .filter-select {
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #ffffff;
+    transition: border-color 0.15s ease;
+}
+
+.o_hr_employee_dashboard .filter-select:focus {
+    border-color: #714b67;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.1);
+}
+
+.o_hr_employee_dashboard .btn-refresh {
+    margin-left: auto;
+}
+
+/* ========== KPI Cards ========== */
+.o_hr_employee_dashboard .kpi-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.o_hr_employee_dashboard .kpi-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    border-left: 4px solid transparent;
+}
+
+.o_hr_employee_dashboard .kpi-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #212529;
+    line-height: 1.1;
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-value small {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.o_hr_employee_dashboard .kpi-card .kpi-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* KPI Card Color Variants */
+.o_hr_employee_dashboard .kpi-primary {
+    border-left-color: #714b67;
+}
+.o_hr_employee_dashboard .kpi-primary .kpi-icon {
+    background: rgba(113, 75, 103, 0.1);
+    color: #714b67;
+}
+
+.o_hr_employee_dashboard .kpi-success {
+    border-left-color: #28a745;
+}
+.o_hr_employee_dashboard .kpi-success .kpi-icon {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.o_hr_employee_dashboard .kpi-danger {
+    border-left-color: #dc3545;
+}
+.o_hr_employee_dashboard .kpi-danger .kpi-icon {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.o_hr_employee_dashboard .kpi-info {
+    border-left-color: #17a2b8;
+}
+.o_hr_employee_dashboard .kpi-info .kpi-icon {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.o_hr_employee_dashboard .kpi-purple {
+    border-left-color: #6f42c1;
+}
+.o_hr_employee_dashboard .kpi-purple .kpi-icon {
+    background: rgba(111, 66, 193, 0.1);
+    color: #6f42c1;
+}
+
+.o_hr_employee_dashboard .kpi-orange {
+    border-left-color: #fd7e14;
+}
+.o_hr_employee_dashboard .kpi-orange .kpi-icon {
+    background: rgba(253, 126, 20, 0.1);
+    color: #fd7e14;
+}
+
+.o_hr_employee_dashboard .kpi-teal {
+    border-left-color: #20c997;
+}
+.o_hr_employee_dashboard .kpi-teal .kpi-icon {
+    background: rgba(32, 201, 151, 0.1);
+    color: #20c997;
+}
+
+.o_hr_employee_dashboard .kpi-maroon {
+    border-left-color: #85144b;
+}
+.o_hr_employee_dashboard .kpi-maroon .kpi-icon {
+    background: rgba(133, 20, 75, 0.1);
+    color: #85144b;
+}
+
+/* ========== Charts Container ========== */
+.o_hr_employee_dashboard .charts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.o_hr_employee_dashboard .chart-row {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.o_hr_employee_dashboard .chart-row:last-child {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.o_hr_employee_dashboard .chart-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.o_hr_employee_dashboard .chart-card.chart-sm {
+    min-height: 320px;
+}
+
+.o_hr_employee_dashboard .chart-card.chart-md {
+    min-height: 350px;
+}
+
+.o_hr_employee_dashboard .chart-card.chart-lg {
+    min-height: 380px;
+}
+
+.o_hr_employee_dashboard .chart-card .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eef0f2;
+}
+
+.o_hr_employee_dashboard .chart-card .chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.o_hr_employee_dashboard .chart-card .chart-title i {
+    color: #714b67;
+    font-size: 14px;
+}
+
+.o_hr_employee_dashboard .chart-card .chart-body {
+    position: relative;
+    height: 250px;
+}
+
+.o_hr_employee_dashboard .chart-card .chart-body canvas {
+    max-height: 100%;
+}
+
+/* ========== Loading State ========== */
+.o_hr_employee_dashboard .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.o_hr_employee_dashboard .loading-content {
+    text-align: center;
+}
+
+.o_hr_employee_dashboard .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e9ecef;
+    border-top-color: #714b67;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+.o_hr_employee_dashboard .loading-text {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== Footer ========== */
+.o_hr_employee_dashboard .dashboard-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.o_hr_employee_dashboard .dashboard-footer p {
+    margin: 0;
+    font-size: 12px;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1200px) {
+    .o_hr_employee_dashboard .chart-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .o_hr_employee_dashboard .chart-row:last-child {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .o_hr_employee_dashboard .kpi-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .o_hr_employee_dashboard {
+        padding: 16px;
+    }
+    
+    .o_hr_employee_dashboard .chart-row,
+    .o_hr_employee_dashboard .chart-row:last-child {
+        grid-template-columns: 1fr;
+    }
+    
+    .o_hr_employee_dashboard .dashboard-header {
+        flex-direction: column;
+    }
+    
+    .o_hr_employee_dashboard .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .o_hr_employee_dashboard .filter-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .o_hr_employee_dashboard .btn-refresh {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .o_hr_employee_dashboard .kpi-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .o_hr_employee_dashboard .dashboard-title {
+        font-size: 20px;
+    }
+}

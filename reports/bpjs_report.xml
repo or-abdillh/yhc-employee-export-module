@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================= -->
+    <!-- Report: BPJS Kesehatan                        -->
+    <!-- ============================================= -->
+    
+    <!-- Paper Format for BPJS Reports -->
+    <record id="paperformat_bpjs_report" model="report.paperformat">
+        <field name="name">BPJS Report A4 Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">15</field>
+        <field name="dpi">90</field>
+    </record>
+    
+    <!-- Report Action: BPJS Kesehatan Peserta -->
+    <record id="action_report_bpjs_kesehatan" model="ir.actions.report">
+        <field name="name">Laporan Peserta BPJS Kesehatan</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_bpjs_kesehatan</field>
+        <field name="report_file">yhc_employee_export.report_bpjs_kesehatan</field>
+        <field name="paperformat_id" ref="paperformat_bpjs_report"/>
+        <field name="print_report_name">'Laporan_BPJS_Kesehatan_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
+    </record>
+    
+    <!-- QWeb Template: BPJS Kesehatan -->
+    <template id="report_bpjs_kesehatan">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .bpjs-header {
+                            background-color: #00A65A;
+                            color: white;
+                            padding: 15px;
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        .bpjs-header h2 {
+                            margin: 0;
+                            font-size: 18pt;
+                        }
+                        .info-box {
+                            background-color: #f5f5f5;
+                            padding: 10px 15px;
+                            margin-bottom: 15px;
+                            border-left: 4px solid #00A65A;
+                        }
+                        .info-box p {
+                            margin: 3px 0;
+                            font-size: 9pt;
+                        }
+                        .data-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 8pt;
+                        }
+                        .data-table th {
+                            background-color: #00A65A;
+                            color: white;
+                            padding: 8px 4px;
+                            text-align: center;
+                            border: 1px solid #ccc;
+                            font-weight: bold;
+                        }
+                        .data-table td {
+                            padding: 5px 4px;
+                            border: 1px solid #ccc;
+                        }
+                        .data-table tr:nth-child(even) {
+                            background-color: #f9f9f9;
+                        }
+                        .text-center { text-align: center; }
+                        .summary-box {
+                            margin-top: 20px;
+                            padding: 10px;
+                            background-color: #e8f5e9;
+                            border: 1px solid #00A65A;
+                        }
+                    </style>
+                    
+                    <!-- Header -->
+                    <div class="bpjs-header">
+                        <h2>LAPORAN DATA PESERTA BPJS KESEHATAN</h2>
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div class="info-box">
+                        <p><strong>Perusahaan:</strong> <span t-esc="docs[0].company_id.name if docs else ''"/></p>
+                        <p><strong>Tanggal Cetak:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
+                        <p><strong>Dicetak Oleh:</strong> <span t-esc="user.name"/></p>
+                        <p><strong>Total Karyawan:</strong> <span t-esc="len(docs)"/></p>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;">No</th>
+                                <th>NIK</th>
+                                <th>Nama Lengkap</th>
+                                <th>L/P</th>
+                                <th>Tgl Lahir</th>
+                                <th>No. BPJS</th>
+                                <th>Kelas</th>
+                                <th>Faskes TK1</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="1"/>
+                            <t t-foreach="docs" t-as="emp">
+                                <t t-set="bpjs_kes" t-value="None"/>
+                                <t t-foreach="emp.bpjs_ids" t-as="bpjs">
+                                    <t t-if="bpjs.bpjs_type == 'kesehatan'">
+                                        <t t-set="bpjs_kes" t-value="bpjs"/>
+                                    </t>
+                                </t>
+                                <tr>
+                                    <td class="text-center" t-esc="idx"/>
+                                    <td t-esc="emp.nik or '-'"/>
+                                    <td t-esc="emp.name"/>
+                                    <td class="text-center" t-esc="'L' if emp.gender == 'male' else 'P'"/>
+                                    <td class="text-center" t-esc="emp.birthday.strftime('%d/%m/%Y') if emp.birthday else '-'"/>
+                                    <td t-esc="bpjs_kes.number if bpjs_kes else '-'"/>
+                                    <td class="text-center" t-esc="bpjs_kes.kelas if bpjs_kes else '-'"/>
+                                    <td t-esc="bpjs_kes.faskes_tk1 if bpjs_kes else '-'"/>
+                                    <td class="text-center" t-esc="'Aktif' if bpjs_kes else 'Tidak Terdaftar'"/>
+                                </tr>
+                                <t t-set="idx" t-value="idx + 1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Summary -->
+                    <div class="summary-box">
+                        <p><strong>Ringkasan:</strong></p>
+                        <p>Total Peserta: <span t-esc="len(docs)"/> karyawan</p>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <!-- ============================================= -->
+    <!-- Report: BPJS Ketenagakerjaan                  -->
+    <!-- ============================================= -->
+    
+    <!-- Report Action: BPJS Ketenagakerjaan -->
+    <record id="action_report_bpjs_ketenagakerjaan" model="ir.actions.report">
+        <field name="name">Laporan Peserta BPJS Ketenagakerjaan</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_bpjs_ketenagakerjaan</field>
+        <field name="report_file">yhc_employee_export.report_bpjs_ketenagakerjaan</field>
+        <field name="paperformat_id" ref="paperformat_bpjs_report"/>
+        <field name="print_report_name">'Laporan_BPJS_TK_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
+    </record>
+    
+    <!-- QWeb Template: BPJS Ketenagakerjaan -->
+    <template id="report_bpjs_ketenagakerjaan">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .bpjstk-header {
+                            background-color: #1565C0;
+                            color: white;
+                            padding: 15px;
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        .bpjstk-header h2 {
+                            margin: 0;
+                            font-size: 18pt;
+                        }
+                        .info-box {
+                            background-color: #f5f5f5;
+                            padding: 10px 15px;
+                            margin-bottom: 15px;
+                            border-left: 4px solid #1565C0;
+                        }
+                        .info-box p {
+                            margin: 3px 0;
+                            font-size: 9pt;
+                        }
+                        .data-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 8pt;
+                        }
+                        .data-table th {
+                            background-color: #1565C0;
+                            color: white;
+                            padding: 8px 4px;
+                            text-align: center;
+                            border: 1px solid #ccc;
+                            font-weight: bold;
+                        }
+                        .data-table td {
+                            padding: 5px 4px;
+                            border: 1px solid #ccc;
+                        }
+                        .data-table tr:nth-child(even) {
+                            background-color: #f9f9f9;
+                        }
+                        .text-center { text-align: center; }
+                        .program-badge {
+                            display: inline-block;
+                            padding: 2px 6px;
+                            border-radius: 3px;
+                            font-size: 7pt;
+                            margin: 1px;
+                        }
+                        .badge-jht { background-color: #4CAF50; color: white; }
+                        .badge-jkk { background-color: #FF9800; color: white; }
+                        .badge-jkm { background-color: #9C27B0; color: white; }
+                        .badge-jp { background-color: #2196F3; color: white; }
+                        .summary-box {
+                            margin-top: 20px;
+                            padding: 10px;
+                            background-color: #E3F2FD;
+                            border: 1px solid #1565C0;
+                        }
+                    </style>
+                    
+                    <!-- Header -->
+                    <div class="bpjstk-header">
+                        <h2>LAPORAN DATA PESERTA BPJS KETENAGAKERJAAN</h2>
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div class="info-box">
+                        <p><strong>Perusahaan:</strong> <span t-esc="docs[0].company_id.name if docs else ''"/></p>
+                        <p><strong>Tanggal Cetak:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
+                        <p><strong>Dicetak Oleh:</strong> <span t-esc="user.name"/></p>
+                        <p><strong>Total Karyawan:</strong> <span t-esc="len(docs)"/></p>
+                    </div>
+                    
+                    <!-- Data Table -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;">No</th>
+                                <th>NIK</th>
+                                <th>No. KPJ</th>
+                                <th>Nama Lengkap</th>
+                                <th>Tgl Lahir</th>
+                                <th>Tgl Masuk</th>
+                                <th>Program</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="1"/>
+                            <t t-foreach="docs" t-as="emp">
+                                <t t-set="bpjs_tk" t-value="None"/>
+                                <t t-foreach="emp.bpjs_ids" t-as="bpjs">
+                                    <t t-if="bpjs.bpjs_type == 'ketenagakerjaan'">
+                                        <t t-set="bpjs_tk" t-value="bpjs"/>
+                                    </t>
+                                </t>
+                                <tr>
+                                    <td class="text-center" t-esc="idx"/>
+                                    <td t-esc="emp.nik or '-'"/>
+                                    <td t-esc="bpjs_tk.number if bpjs_tk else '-'"/>
+                                    <td t-esc="emp.name"/>
+                                    <td class="text-center" t-esc="emp.birthday.strftime('%d/%m/%Y') if emp.birthday else '-'"/>
+                                    <td class="text-center" t-esc="emp.first_contract_date.strftime('%d/%m/%Y') if emp.first_contract_date else '-'"/>
+                                    <td class="text-center">
+                                        <span class="program-badge badge-jht">JHT</span>
+                                        <span class="program-badge badge-jkk">JKK</span>
+                                        <span class="program-badge badge-jkm">JKM</span>
+                                        <span class="program-badge badge-jp">JP</span>
+                                    </td>
+                                    <td class="text-center" t-esc="'Aktif' if bpjs_tk else 'Tidak Terdaftar'"/>
+                                </tr>
+                                <t t-set="idx" t-value="idx + 1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Program Legend -->
+                    <div style="margin-top: 15px; font-size: 8pt;">
+                        <p><strong>Keterangan Program:</strong></p>
+                        <p>
+                            <span class="program-badge badge-jht">JHT</span> Jaminan Hari Tua |
+                            <span class="program-badge badge-jkk">JKK</span> Jaminan Kecelakaan Kerja |
+                            <span class="program-badge badge-jkm">JKM</span> Jaminan Kematian |
+                            <span class="program-badge badge-jp">JP</span> Jaminan Pensiun
+                        </p>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="summary-box">
+                        <p><strong>Ringkasan:</strong></p>
+                        <p>Total Peserta: <span t-esc="len(docs)"/> karyawan</p>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <!-- ============================================= -->
+    <!-- Report: Regulatory Summary                    -->
+    <!-- ============================================= -->
+    
+    <!-- Report Action: Regulatory Summary -->
+    <record id="action_report_regulatory_summary" model="ir.actions.report">
+        <field name="name">Ringkasan Data Regulatory</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_regulatory_summary</field>
+        <field name="report_file">yhc_employee_export.report_regulatory_summary</field>
+        <field name="print_report_name">'Ringkasan_Regulatory_%s' % (time.strftime('%Y%m%d_%H%M%S'))</field>
+    </record>
+    
+    <!-- QWeb Template: Regulatory Summary -->
+    <template id="report_regulatory_summary">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .summary-header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                        }
+                        .summary-header h2 {
+                            color: #714B67;
+                            margin-bottom: 5px;
+                        }
+                        .summary-card {
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            padding: 15px;
+                            margin-bottom: 20px;
+                        }
+                        .card-header {
+                            font-size: 14pt;
+                            font-weight: bold;
+                            color: #333;
+                            border-bottom: 2px solid #714B67;
+                            padding-bottom: 10px;
+                            margin-bottom: 15px;
+                        }
+                        .stat-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 8px 0;
+                            border-bottom: 1px solid #eee;
+                        }
+                        .stat-label { color: #666; }
+                        .stat-value { font-weight: bold; color: #333; }
+                        .highlight-green { color: #00A65A; }
+                        .highlight-red { color: #dc3545; }
+                        .highlight-blue { color: #1565C0; }
+                    </style>
+                    
+                    <div class="summary-header">
+                        <h2>RINGKASAN DATA REGULATORY</h2>
+                        <p>Tanggal: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/></p>
+                    </div>
+                    
+                    <!-- Company Info -->
+                    <div class="summary-card">
+                        <div class="card-header">Informasi Perusahaan</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Nama Perusahaan</span>
+                            <span class="stat-value" t-esc="docs[0].company_id.name if docs else '-'"/>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Total Karyawan</span>
+                            <span class="stat-value" t-esc="len(docs)"/>
+                        </div>
+                    </div>
+                    
+                    <!-- BPJS Stats -->
+                    <div class="summary-card">
+                        <div class="card-header">Status BPJS</div>
+                        
+                        <t t-set="bpjs_kes_count" t-value="0"/>
+                        <t t-set="bpjs_tk_count" t-value="0"/>
+                        <t t-foreach="docs" t-as="emp">
+                            <t t-foreach="emp.bpjs_ids" t-as="bpjs">
+                                <t t-if="bpjs.bpjs_type == 'kesehatan'">
+                                    <t t-set="bpjs_kes_count" t-value="bpjs_kes_count + 1"/>
+                                </t>
+                                <t t-if="bpjs.bpjs_type == 'ketenagakerjaan'">
+                                    <t t-set="bpjs_tk_count" t-value="bpjs_tk_count + 1"/>
+                                </t>
+                            </t>
+                        </t>
+                        
+                        <div class="stat-row">
+                            <span class="stat-label">BPJS Kesehatan - Terdaftar</span>
+                            <span class="stat-value highlight-green" t-esc="bpjs_kes_count"/>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">BPJS Kesehatan - Belum Terdaftar</span>
+                            <span class="stat-value highlight-red" t-esc="len(docs) - bpjs_kes_count"/>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">BPJS Ketenagakerjaan - Terdaftar</span>
+                            <span class="stat-value highlight-blue" t-esc="bpjs_tk_count"/>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">BPJS Ketenagakerjaan - Belum Terdaftar</span>
+                            <span class="stat-value highlight-red" t-esc="len(docs) - bpjs_tk_count"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Gender Stats -->
+                    <div class="summary-card">
+                        <div class="card-header">Distribusi Gender</div>
+                        
+                        <t t-set="male_count" t-value="0"/>
+                        <t t-set="female_count" t-value="0"/>
+                        <t t-foreach="docs" t-as="emp">
+                            <t t-if="emp.gender == 'male'">
+                                <t t-set="male_count" t-value="male_count + 1"/>
+                            </t>
+                            <t t-else="">
+                                <t t-set="female_count" t-value="female_count + 1"/>
+                            </t>
+                        </t>
+                        
+                        <div class="stat-row">
+                            <span class="stat-label">Laki-laki</span>
+                            <span class="stat-value" t-esc="male_count"/>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Perempuan</span>
+                            <span class="stat-value" t-esc="female_count"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="margin-top: 30px; text-align: center; font-size: 9pt; color: #666;">
+                        <p>Laporan ini digenerate oleh YHC Employee Export</p>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
