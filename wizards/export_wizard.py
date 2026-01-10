@@ -582,10 +582,65 @@ class HrEmployeeExportWizard(models.TransientModel):
         }
 
     def _export_pdf(self, employees):
-        """Export ke format PDF menggunakan QWeb report."""
+        """
+        Export ke format PDF menggunakan QWeb report.
+        
+        Menggunakan service EmployeeExportPdf untuk generate PDF
+        berdasarkan kategori data yang dipilih.
+        """
         self.ensure_one()
-        # TODO: Implementasi PDF report di Fase 7
-        raise UserError(_("Export PDF akan tersedia setelah Fase 7 selesai."))
+        
+        try:
+            from ..services.export_pdf import EmployeeExportPdf
+            
+            # Get selected categories
+            categories = self._get_selected_categories()
+            if not categories:
+                categories = ['identity', 'employment']
+            
+            # Initialize PDF service
+            pdf_service = EmployeeExportPdf(self.env)
+            
+            # Generate PDF
+            pdf_content, filename = pdf_service.export(employees, categories=categories)
+            
+            # Encode dan simpan file
+            self.write({
+                'output_file': base64.b64encode(pdf_content),
+                'output_filename': filename,
+                'state': 'done',
+            })
+            
+            # Log export activity
+            self._log_export_activity(len(employees), 'pdf')
+            
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content?model=hr.employee.export.wizard&id={self.id}&field=output_file&filename={filename}&download=true',
+                'target': 'self',
+            }
+            
+        except ImportError as e:
+            _logger.error(f"Import error for PDF export: {str(e)}")
+            raise UserError(_("Gagal mengimpor modul PDF export. Pastikan service export_pdf tersedia."))
+        except Exception as e:
+            _logger.error(f"Error during PDF export: {str(e)}")
+            raise UserError(_("Gagal melakukan export PDF: %s") % str(e))
+
+    def _log_export_activity(self, record_count, export_format):
+        """Log aktivitas export ke audit log jika tersedia."""
+        try:
+            AuditLog = self.env.get('hr.employee.export.audit.log')
+            if AuditLog:
+                AuditLog.create({
+                    'user_id': self.env.user.id,
+                    'export_type': export_format,
+                    'record_count': record_count,
+                    'export_date': fields.Datetime.now(),
+                    'status': 'success',
+                })
+        except Exception as e:
+            _logger.warning(f"Could not log export activity: {str(e)}")
 
     def _get_custom_export_data(self, employees):
         """Get export data berdasarkan kategori yang dipilih."""
