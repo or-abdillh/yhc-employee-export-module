@@ -141,6 +141,75 @@ Pendidikan:
 | R03 | Format Pajak (1721-A1) | Data untuk pelaporan pajak |
 | R04 | Format Wajib Lapor Ketenagakerjaan | Sesuai format Disnaker |
 
+### 3.3 Export Grafik (Graph-based PDF Report)
+#### 3.3.1 Deskripsi Fitur
+Fitur Export Grafik ke PDF memungkinkan pengguna mengekspor visualisasi data karyawan dalam bentuk laporan PDF berbasis grafik, yang diambil langsung dari modul Analytics Dashboard.
+
+Fitur ini ditujukan untuk:
+
+- Laporan eksekutif
+- Presentasi manajemen
+- Dokumentasi rapat strategis
+- Audit & evaluasi SDM
+
+#### 3.3.2 Cakupan Grafik yang Didukung
+Grafik yang dapat diekspor identik dengan dashboard, antara lain:
+| Kode | Nama Grafik             | Tipe |
+| ---- | ----------------------- | ---- |
+| G01  | Distribusi Gender       | Pie  |
+| G02  | Distribusi Usia         | Bar  |
+| G06  | Karyawan per Departemen | Bar  |
+| G10  | Status Kepegawaian      | Pie  |
+| G13  | Masa Kerja              | Bar  |
+| G14  | Trend Rekrutmen         | Line |
+| G16  | Level Pendidikan        | Bar  |
+| G20  | Pelatihan per Jenis     | Pie  |
+
+#### 3.3.3 Alur Penggunaan
+```
+Dashboard / Export Menu
+   ↓
+Pilih "Export Grafik ke PDF"
+   ↓
+Pilih grafik yang diinginkan
+   ↓
+Atur filter & layout
+   ↓
+Preview
+   ↓
+Generate PDF
+```
+
+#### 3.3.4 Layout PDF
+| Layout            | Deskripsi                    |
+| ----------------- | ---------------------------- |
+| Executive Summary | Ringkasan + 4–6 grafik utama |
+| Single Column     | Satu grafik per halaman      |
+| Two Columns       | Dua grafik per halaman       |
+
+#### 3.3.5 User Story Tambahan
+| ID   | User Story                                                                                 | Priority |
+| ---- | ------------------------------------------------------------------------------------------ | -------- |
+| US10 | Sebagai HR Manager, saya ingin mengekspor grafik dashboard ke PDF untuk presentasi direksi | High     |
+| US11 | Sebagai Management, saya ingin memilih grafik tertentu saja dalam laporan PDF              | High     |
+| US12 | Sebagai HR Officer, saya ingin menyimpan template laporan grafik                           | Medium   |
+
+#### 3.3.6 Acceptance Criteria (Tambahan)
+| ID   | Kriteria                                 |
+| ---- | ---------------------------------------- |
+| AC15 | PDF berisi grafik sesuai pilihan user    |
+| AC16 | Data grafik identik dengan dashboard     |
+| AC17 | Layout PDF rapi & profesional            |
+| AC18 | Export selesai < 15 detik untuk 6 grafik |
+| AC19 | Grafik tetap jelas saat dicetak          |
+
+#### 3.3.7 Risks Tambahan
+| Risk                            | Mitigation                      |
+| ------------------------------- | ------------------------------- |
+| Grafik blur di PDF              | Gunakan SVG / high DPI PNG      |
+| Perbedaan data dashboard vs PDF | Gunakan shared analytics method |
+| PDF terlalu berat               | Batasi jumlah grafik per export |
+
 ---
 
 ## 4. Spesifikasi Teknis
