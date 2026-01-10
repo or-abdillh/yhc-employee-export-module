@@ -162,86 +162,148 @@
         <field name="model">hr.employee.export.graph.wizard</field>
         <field name="arch" type="xml">
             <form string="Export Grafik ke PDF">
-                <group invisible="state != 'config'">
-                    <!-- Config Selection -->
-                    <group>
-                        <field name="use_config"/>
-                        <field name="config_id" 
-                               invisible="not use_config"
-                               required="use_config"/>
-                    </group>
+                <field name="state" invisible="1"/>
+                <field name="use_config" invisible="1"/>
+                
+                <!-- Config State -->
+                <sheet invisible="state != 'config'">
+                    <!-- Config Selection Toggle -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center gap-2 p-2 bg-light rounded">
+                                <field name="use_config" widget="boolean_toggle"/>
+                                <label for="use_config" class="mb-0 fw-bold">Gunakan Konfigurasi Tersimpan</label>
+                                <field name="config_id" 
+                                       invisible="not use_config"
+                                       required="use_config"
+                                       class="ms-3 flex-grow-1"
+                                       placeholder="Pilih konfigurasi..."/>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <!-- Manual Selection -->
-                    <group invisible="use_config" string="Pilih Grafik">
-                        <group string="📊 Demografis">
-                            <field name="include_g01"/>
-                            <field name="include_g02"/>
-                            <field name="include_g03"/>
-                            <field name="include_g04"/>
-                        </group>
-                        <group string="💼 Ketenagakerjaan">
-                            <field name="include_g06"/>
-                            <field name="include_g08"/>
-                            <field name="include_g09"/>
-                            <field name="include_g10"/>
-                            <field name="include_g13"/>
-                            <field name="include_g14"/>
-                        </group>
-                    </group>
-                    <group invisible="use_config">
-                        <group string="🎓 Pendidikan">
-                            <field name="include_g16"/>
-                        </group>
-                        <group string="📚 Pelatihan">
-                            <field name="include_g20"/>
-                            <field name="include_g21"/>
-                        </group>
-                    </group>
+                    <!-- Manual Configuration -->
+                    <notebook invisible="use_config">
+                        <page string="📊 Pilih Grafik" name="graphs">
+                            <div class="row">
+                                <!-- Kolom Kiri: Demografis -->
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-2">📊 Demografis</h5>
+                                    <div class="ps-2">
+                                        <field name="include_g01" class="oe_inline"/>
+                                        <label for="include_g01" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g02" class="oe_inline"/>
+                                        <label for="include_g02" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g03" class="oe_inline"/>
+                                        <label for="include_g03" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g04" class="oe_inline"/>
+                                        <label for="include_g04" class="ms-1"/>
+                                    </div>
+                                    
+                                    <h5 class="text-primary mb-2 mt-3">🎓 Pendidikan</h5>
+                                    <div class="ps-2">
+                                        <field name="include_g16" class="oe_inline"/>
+                                        <label for="include_g16" class="ms-1"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- Kolom Kanan: Ketenagakerjaan & Pelatihan -->
+                                <div class="col-md-6">
+                                    <h5 class="text-primary mb-2">💼 Ketenagakerjaan</h5>
+                                    <div class="ps-2">
+                                        <field name="include_g06" class="oe_inline"/>
+                                        <label for="include_g06" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g08" class="oe_inline"/>
+                                        <label for="include_g08" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g09" class="oe_inline"/>
+                                        <label for="include_g09" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g10" class="oe_inline"/>
+                                        <label for="include_g10" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g13" class="oe_inline"/>
+                                        <label for="include_g13" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g14" class="oe_inline"/>
+                                        <label for="include_g14" class="ms-1"/>
+                                    </div>
+                                    
+                                    <h5 class="text-primary mb-2 mt-3">📚 Pelatihan</h5>
+                                    <div class="ps-2">
+                                        <field name="include_g20" class="oe_inline"/>
+                                        <label for="include_g20" class="ms-1"/>
+                                    </div>
+                                    <div class="ps-2">
+                                        <field name="include_g21" class="oe_inline"/>
+                                        <label for="include_g21" class="ms-1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </page>
+                        
+                        <page string="🔧 Opsi &amp; Filter" name="options">
+                            <group>
+                                <group string="Filter Data">
+                                    <field name="department_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"
+                                           placeholder="Semua departemen"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                </group>
+                                <group string="Opsi Laporan">
+                                    <field name="report_title" placeholder="Laporan Analytics Karyawan"/>
+                                    <field name="layout_type"/>
+                                    <field name="include_cover"/>
+                                    <field name="include_summary"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
                     
-                    <!-- Filters -->
-                    <group string="Filter Data" invisible="use_config">
-                        <group>
-                            <field name="department_ids" widget="many2many_tags"
-                                   options="{'no_create': True}"/>
-                        </group>
-                        <group>
-                            <field name="date_from"/>
-                            <field name="date_to"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Layout Options -->
-                    <group string="Opsi Laporan" invisible="use_config">
-                        <group>
-                            <field name="report_title"/>
-                            <field name="layout_type"/>
-                        </group>
-                        <group>
-                            <field name="include_cover"/>
-                            <field name="include_summary"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Preview Info -->
-                    <group>
-                        <field name="graph_count" readonly="1"/>
-                        <field name="preview_info" readonly="1" widget="text"/>
-                    </group>
-                </group>
+                    <!-- Preview Summary -->
+                    <div class="mt-3 p-3 bg-light rounded border">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="text-muted">Jumlah Grafik:</span>
+                                <strong class="ms-2 text-primary">
+                                    <field name="graph_count" class="oe_inline"/> grafik
+                                </strong>
+                            </div>
+                            <div class="col-md-8">
+                                <field name="preview_info" readonly="1" 
+                                       widget="text" class="text-muted small"
+                                       style="white-space: pre-line;"/>
+                            </div>
+                        </div>
+                    </div>
+                </sheet>
                 
                 <!-- Done State -->
-                <group invisible="state != 'done'">
-                    <div class="alert alert-success" role="alert">
-                        <strong>✅ Export Berhasil!</strong>
-                        <p>File PDF telah berhasil dibuat.</p>
+                <sheet invisible="state != 'done'">
+                    <div class="text-center p-4">
+                        <div class="alert alert-success d-inline-block" role="alert">
+                            <h4>✅ Export Berhasil!</h4>
+                            <p class="mb-0">File PDF telah berhasil dibuat.</p>
+                        </div>
+                        <group class="mt-4">
+                            <field name="output_filename" readonly="1"/>
+                            <field name="output_file" filename="output_filename" readonly="1"/>
+                        </group>
                     </div>
-                    <group>
-                        <field name="output_filename" readonly="1"/>
-                        <field name="output_file" filename="output_filename" readonly="1"/>
-                    </group>
-                </group>
-                
-                <field name="state" invisible="1"/>
+                </sheet>
                 
                 <footer>
                     <button name="action_export_pdf" 
