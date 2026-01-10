@@ -281,8 +281,7 @@ class EmployeeExportGraphPdf(EmployeeExportBase):
         }
         
         for emp in employees:
-            join_date = getattr(emp, 'first_contract_date', None) or \
-                       (emp.contract_id.date_start if emp.contract_id else None)
+            join_date = getattr(emp, 'first_contract_date', None)
             
             if join_date:
                 tenure = relativedelta(today, join_date)
@@ -401,8 +400,7 @@ class EmployeeExportGraphPdf(EmployeeExportBase):
         # Average tenure
         tenures = []
         for emp in active:
-            join_date = getattr(emp, 'first_contract_date', None) or \
-                       (emp.contract_id.date_start if emp.contract_id else None)
+            join_date = getattr(emp, 'first_contract_date', None)
             if join_date:
                 tenure = relativedelta(today, join_date)
                 tenures.append(tenure.years + (tenure.months / 12))

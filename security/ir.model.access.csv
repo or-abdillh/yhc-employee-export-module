@@ -16,3 +16,4 @@ access_hr_employee_export_graph_config_user,hr.employee.export.graph.config.user
 access_hr_employee_export_graph_config_officer,hr.employee.export.graph.config.officer,model_hr_employee_export_graph_config,group_hr_export_officer,1,1,1,0
 access_hr_employee_export_graph_config_manager,hr.employee.export.graph.config.manager,model_hr_employee_export_graph_config,group_hr_export_manager,1,1,1,1
 access_hr_employee_export_graph_wizard_user,hr.employee.export.graph.wizard.user,model_hr_employee_export_graph_wizard,group_hr_export_user,1,1,1,1
+access_hr_employee_seed_wizard_manager,hr.employee.seed.wizard.manager,model_hr_employee_seed_wizard,group_hr_export_manager,1,1,1,1

@@ -154,6 +154,16 @@
             sequence="30"
             groups="group_hr_export_manager"
         />
+        
+        <!-- Menu: Generate Data Dummy -->
+        <menuitem
+            id="menu_hr_employee_seed_wizard"
+            name="Generate Data Dummy"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_seed_wizard"
+            sequence="99"
+            groups="group_hr_export_manager"
+        />
 
         <!-- ========== VIEWS: Export Config ========== -->
         

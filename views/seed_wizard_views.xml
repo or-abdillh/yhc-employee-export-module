@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Form View: Seed Wizard -->
+    <record id="view_hr_employee_seed_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.seed.wizard.form</field>
+        <field name="model">hr.employee.seed.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Data Dummy Karyawan">
+                <group invisible="state != 'config'">
+                    <group string="Konfigurasi">
+                        <field name="count"/>
+                        <field name="include_departments"/>
+                        <field name="include_jobs"/>
+                    </group>
+                    <group string="Info">
+                        <div class="alert alert-info" role="alert">
+                            <strong>ℹ️ Informasi:</strong>
+                            <ul>
+                                <li>Data yang dibuat adalah data dummy untuk testing</li>
+                                <li>Nama menggunakan nama Indonesia random</li>
+                                <li>Maksimal 500 karyawan per eksekusi</li>
+                                <li>Field yhc_employee akan otomatis terisi jika tersedia</li>
+                            </ul>
+                        </div>
+                    </group>
+                </group>
+                
+                <group invisible="state != 'done'">
+                    <field name="result_message" widget="text" readonly="1" 
+                           style="font-family: monospace; white-space: pre-wrap;"/>
+                </group>
+                
+                <field name="state" invisible="1"/>
+                
+                <footer>
+                    <button name="action_generate" 
+                            string="🚀 Generate Karyawan" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="state != 'config'"/>
+                    <button name="action_view_employees" 
+                            string="👥 Lihat Karyawan" 
+                            type="object"
+                            invisible="state != 'done'"/>
+                    <button name="action_back" 
+                            string="⬅️ Kembali" 
+                            type="object"
+                            invisible="state != 'done'"/>
+                    <button string="Tutup" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Action: Seed Wizard -->
+    <record id="action_hr_employee_seed_wizard" model="ir.actions.act_window">
+        <field name="name">Generate Data Dummy</field>
+        <field name="res_model">hr.employee.seed.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_hr_employee_seed_wizard_form"/>
+    </record>
+</odoo>
