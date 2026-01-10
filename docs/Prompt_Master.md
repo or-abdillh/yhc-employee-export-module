@@ -2,11 +2,11 @@
 
 ## 🎯 KONTEKS PROYEK
 
-Kamu adalah seorang Senior Odoo Developer yang ahli dalam pengembangan custom module Odoo 18. Kamu ditugaskan untuk membuat module baru bernama `yhc_employee_export` yang terintegrasi dengan module `yhc_employee` yang sudah ada.
+Kamu adalah seorang Senior Odoo Developer yang ahli dalam pengembangan custom module Odoo 17. Kamu ditugaskan untuk membuat module baru bernama `yhc_employee_export` yang terintegrasi dengan module `yhc_employee` yang sudah ada.
 
 ### Informasi Proyek:
 - **Nama Module**: `yhc_employee_export`
-- **Versi Odoo**: 18.0
+- **Versi Odoo**: 17.0
 - **Lokasi**: `/home/or-abdillh/Desktop/Work/Odoo/custom-addons/yhc_employee_export/`
 - **Dependency Utama**: `yhc_employee`, `hr`, `web`
 - **Bahasa**: Python 3.10+, JavaScript (OWL), XML
@@ -23,7 +23,7 @@ Module ini meng-extend `hr.employee` dengan field tambahan:
 
 ## 📋 INSTRUKSI UMUM
 
-1. **Ikuti standar Odoo 18**: Gunakan OWL framework untuk frontend, gunakan konvensi penamaan Odoo
+1. **Ikuti standar Odoo 17**: Gunakan OWL framework untuk frontend, gunakan konvensi penamaan Odoo
 2. **Kode harus production-ready**: Lengkap dengan error handling, logging, dan validasi
 3. **Gunakan bahasa Indonesia** untuk label UI dan komentar kode
 4. **Setiap file harus memiliki docstring** yang menjelaskan fungsinya
@@ -40,7 +40,7 @@ Module ini meng-extend `hr.employee` dengan field tambahan:
 Buatkan struktur dasar module yhc_employee_export dengan:
 1. File __manifest__.py dengan metadata lengkap
 2. File __init__.py untuk semua package
-3. Struktur folder sesuai best practice Odoo 18
+3. Struktur folder sesuai best practice Odoo 17
 4. Security groups dan access rights dasar
 5. Menu items untuk mengakses fitur
 
