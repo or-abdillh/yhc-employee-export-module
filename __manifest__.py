@@ -64,6 +64,7 @@
         'reports/bpjs_report.xml',
         # Views - wizard harus sebelum menu karena menu mereferensikan action wizard
         'views/export_wizard_views.xml',
+        'views/export_graph_views.xml',
         'views/audit_log_views.xml',
         'views/menu_views.xml',
     ],

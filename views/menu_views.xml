@@ -96,6 +96,16 @@
             groups="group_hr_export_user"
         />
         
+        <!-- Menu: Export Grafik ke PDF -->
+        <menuitem
+            id="menu_hr_employee_export_graph"
+            name="Export Grafik"
+            parent="menu_hr_employee_export"
+            action="action_hr_employee_export_graph_wizard"
+            sequence="20"
+            groups="group_hr_export_user"
+        />
+        
         <!-- Submenu: Konfigurasi -->
         <menuitem
             id="menu_hr_employee_export_config"
@@ -122,6 +132,16 @@
             parent="menu_hr_employee_export_config"
             action="action_hr_employee_export_template"
             sequence="20"
+            groups="group_hr_export_officer"
+        />
+        
+        <!-- Menu: Konfigurasi Export Grafik -->
+        <menuitem
+            id="menu_hr_employee_export_graph_config_list"
+            name="Konfigurasi Export Grafik"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_export_graph_config"
+            sequence="25"
             groups="group_hr_export_officer"
         />
         

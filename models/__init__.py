@@ -8,6 +8,8 @@ Package ini berisi:
 - hr_employee_analytics: Model analytics untuk dashboard
 - export_audit_log: Model audit log aktivitas export
 - export_security_mixin: Mixin untuk security dan validasi akses
+- graph_registry: Registry definisi grafik untuk export
+- export_graph_config: Model konfigurasi export grafik
 """
 
 from . import export_config
@@ -15,3 +17,5 @@ from . import export_template
 from . import hr_employee_analytics
 from . import export_audit_log
 from . import export_security_mixin
+from . import graph_registry
+from . import export_graph_config

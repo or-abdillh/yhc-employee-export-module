@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ===== Graph Config Views ===== -->
+    
+    <!-- Form View: Graph Config -->
+    <record id="view_hr_employee_export_graph_config_form" model="ir.ui.view">
+        <field name="name">hr.employee.export.graph.config.form</field>
+        <field name="model">hr.employee.export.graph.config</field>
+        <field name="arch" type="xml">
+            <form string="Konfigurasi Export Grafik">
+                <header>
+                    <button name="action_open_export_wizard" 
+                            string="Export PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            icon="fa-file-pdf-o"/>
+                    <button name="action_preview" 
+                            string="Preview" 
+                            type="object"
+                            icon="fa-eye"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="action_open_export_wizard" icon="fa-bar-chart">
+                            <field name="graph_count" widget="statinfo" string="Grafik"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" 
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nama Konfigurasi"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Informasi Dasar">
+                            <field name="description" placeholder="Deskripsi konfigurasi..."/>
+                            <field name="report_title"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Layout">
+                            <field name="layout_type" widget="radio"/>
+                            <field name="page_orientation" widget="radio"/>
+                            <field name="include_cover"/>
+                            <field name="include_summary"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Pilihan Grafik" name="graphs">
+                            <group>
+                                <group string="📊 Demografis">
+                                    <field name="include_g01"/>
+                                    <field name="include_g02"/>
+                                    <field name="include_g03"/>
+                                    <field name="include_g04"/>
+                                </group>
+                                <group string="💼 Ketenagakerjaan">
+                                    <field name="include_g06"/>
+                                    <field name="include_g08"/>
+                                    <field name="include_g09"/>
+                                    <field name="include_g10"/>
+                                    <field name="include_g13"/>
+                                    <field name="include_g14"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="🎓 Pendidikan">
+                                    <field name="include_g16"/>
+                                </group>
+                                <group string="📚 Pelatihan">
+                                    <field name="include_g20"/>
+                                    <field name="include_g21"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="selected_graphs_display" readonly="1" 
+                                       widget="text" class="text-muted"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Filter Data" name="filters">
+                            <group>
+                                <group string="Filter Departemen">
+                                    <field name="filter_department_ids" 
+                                           widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                </group>
+                                <group string="Filter Tanggal">
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Tree View: Graph Config -->
+    <record id="view_hr_employee_export_graph_config_tree" model="ir.ui.view">
+        <field name="name">hr.employee.export.graph.config.tree</field>
+        <field name="model">hr.employee.export.graph.config</field>
+        <field name="arch" type="xml">
+            <tree string="Konfigurasi Export Grafik">
+                <field name="name"/>
+                <field name="layout_type"/>
+                <field name="graph_count"/>
+                <field name="selected_graphs_display" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Search View: Graph Config -->
+    <record id="view_hr_employee_export_graph_config_search" model="ir.ui.view">
+        <field name="name">hr.employee.export.graph.config.search</field>
+        <field name="model">hr.employee.export.graph.config</field>
+        <field name="arch" type="xml">
+            <search string="Cari Konfigurasi">
+                <field name="name"/>
+                <field name="description"/>
+                <separator/>
+                <filter name="active" string="Aktif" domain="[('active', '=', True)]"/>
+                <filter name="archived" string="Arsip" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="with_summary" string="Dengan Ringkasan" 
+                        domain="[('include_summary', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_layout" string="Layout" 
+                            context="{'group_by': 'layout_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Action: Graph Config -->
+    <record id="action_hr_employee_export_graph_config" model="ir.actions.act_window">
+        <field name="name">Konfigurasi Export Grafik</field>
+        <field name="res_model">hr.employee.export.graph.config</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_hr_employee_export_graph_config_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Buat konfigurasi export grafik pertama Anda
+            </p>
+            <p>
+                Konfigurasi ini memungkinkan Anda menyimpan pengaturan export grafik
+                yang sering digunakan untuk laporan analitik karyawan.
+            </p>
+        </field>
+    </record>
+    
+    <!-- ===== Graph Export Wizard Views ===== -->
+    
+    <!-- Form View: Graph Wizard -->
+    <record id="view_hr_employee_export_graph_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.export.graph.wizard.form</field>
+        <field name="model">hr.employee.export.graph.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Grafik ke PDF">
+                <group invisible="state != 'config'">
+                    <!-- Config Selection -->
+                    <group>
+                        <field name="use_config"/>
+                        <field name="config_id" 
+                               invisible="not use_config"
+                               required="use_config"/>
+                    </group>
+                    
+                    <!-- Manual Selection -->
+                    <group invisible="use_config" string="Pilih Grafik">
+                        <group string="📊 Demografis">
+                            <field name="include_g01"/>
+                            <field name="include_g02"/>
+                            <field name="include_g03"/>
+                            <field name="include_g04"/>
+                        </group>
+                        <group string="💼 Ketenagakerjaan">
+                            <field name="include_g06"/>
+                            <field name="include_g08"/>
+                            <field name="include_g09"/>
+                            <field name="include_g10"/>
+                            <field name="include_g13"/>
+                            <field name="include_g14"/>
+                        </group>
+                    </group>
+                    <group invisible="use_config">
+                        <group string="🎓 Pendidikan">
+                            <field name="include_g16"/>
+                        </group>
+                        <group string="📚 Pelatihan">
+                            <field name="include_g20"/>
+                            <field name="include_g21"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Filters -->
+                    <group string="Filter Data" invisible="use_config">
+                        <group>
+                            <field name="department_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Layout Options -->
+                    <group string="Opsi Laporan" invisible="use_config">
+                        <group>
+                            <field name="report_title"/>
+                            <field name="layout_type"/>
+                        </group>
+                        <group>
+                            <field name="include_cover"/>
+                            <field name="include_summary"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Preview Info -->
+                    <group>
+                        <field name="graph_count" readonly="1"/>
+                        <field name="preview_info" readonly="1" widget="text"/>
+                    </group>
+                </group>
+                
+                <!-- Done State -->
+                <group invisible="state != 'done'">
+                    <div class="alert alert-success" role="alert">
+                        <strong>✅ Export Berhasil!</strong>
+                        <p>File PDF telah berhasil dibuat.</p>
+                    </div>
+                    <group>
+                        <field name="output_filename" readonly="1"/>
+                        <field name="output_file" filename="output_filename" readonly="1"/>
+                    </group>
+                </group>
+                
+                <field name="state" invisible="1"/>
+                
+                <footer>
+                    <button name="action_export_pdf" 
+                            string="📄 Export PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="state != 'config'"/>
+                    <button name="action_preview" 
+                            string="👁️ Preview" 
+                            type="object"
+                            invisible="state != 'config'"/>
+                    <button name="action_save_config" 
+                            string="💾 Simpan Konfigurasi" 
+                            type="object"
+                            invisible="state != 'config' or use_config"/>
+                    <button name="action_back" 
+                            string="⬅️ Kembali" 
+                            type="object"
+                            invisible="state != 'done'"/>
+                    <button string="Tutup" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Action: Graph Wizard -->
+    <record id="action_hr_employee_export_graph_wizard" model="ir.actions.act_window">
+        <field name="name">Export Grafik ke PDF</field>
+        <field name="res_model">hr.employee.export.graph.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_hr_employee_export_graph_wizard_form"/>
+    </record>
+
+</odoo>

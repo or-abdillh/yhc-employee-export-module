@@ -12,3 +12,7 @@ access_hr_employee_analytics_manager,hr.employee.analytics.manager,model_hr_empl
 access_hr_employee_analytics_base,hr.employee.analytics.base,model_hr_employee_analytics,base.group_user,1,1,1,1
 access_export_audit_log_user,hr.employee.export.audit.log.user,model_hr_employee_export_audit_log,group_hr_export_user,1,0,1,0
 access_export_audit_log_manager,hr.employee.export.audit.log.manager,model_hr_employee_export_audit_log,group_hr_export_manager,1,1,1,1
+access_hr_employee_export_graph_config_user,hr.employee.export.graph.config.user,model_hr_employee_export_graph_config,group_hr_export_user,1,0,0,0
+access_hr_employee_export_graph_config_officer,hr.employee.export.graph.config.officer,model_hr_employee_export_graph_config,group_hr_export_officer,1,1,1,0
+access_hr_employee_export_graph_config_manager,hr.employee.export.graph.config.manager,model_hr_employee_export_graph_config,group_hr_export_manager,1,1,1,1
+access_hr_employee_export_graph_wizard_user,hr.employee.export.graph.wizard.user,model_hr_employee_export_graph_wizard,group_hr_export_user,1,1,1,1
