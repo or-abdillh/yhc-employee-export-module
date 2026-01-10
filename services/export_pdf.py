@@ -29,7 +29,8 @@ class EmployeeExportPdf(EmployeeExportBase):
     def __init__(self, env):
         """Initialize PDF export service."""
         super().__init__(env)
-        self.report_name = 'yhc_employee_export.report_employee_export'
+        # Gunakan action report, bukan template
+        self.report_action_name = 'yhc_employee_export.action_report_employee_export'
     
     def export(self, employees, categories=None, config=None):
         """
@@ -109,20 +110,33 @@ class EmployeeExportPdf(EmployeeExportBase):
         Returns:
             bytes: PDF content
         """
-        # Get report action
-        report = self.env.ref(self.report_name, raise_if_not_found=False)
+        # Get report action (ir.actions.report)
+        report = self.env.ref(self.report_action_name, raise_if_not_found=False)
         
-        if report:
-            # Use standard Odoo report
-            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                report,
-                employees.ids,
-                data=report_data
-            )
-            return pdf_content
-        else:
-            # Fallback: Generate simple PDF using wkhtmltopdf directly
-            return self._generate_simple_pdf(employees, report_data)
+        _logger.info(f"Attempting to generate PDF with report: {self.report_action_name}")
+        _logger.info(f"Report found: {report}, type: {report._name if report else 'None'}")
+        
+        if report and report._name == 'ir.actions.report':
+            try:
+                # Use standard Odoo report - Odoo 17 signature
+                # Di Odoo 17: report._render_qweb_pdf(res_ids, data=data)
+                pdf_content, _ = report._render_qweb_pdf(
+                    employees.ids,
+                    data=report_data
+                )
+                
+                if pdf_content:
+                    _logger.info(f"PDF generated successfully, size: {len(pdf_content)} bytes")
+                    return pdf_content
+                else:
+                    _logger.warning("PDF content is empty, using fallback")
+                    
+            except Exception as e:
+                _logger.error(f"Error with QWeb PDF render: {str(e)}")
+        
+        # Fallback: Generate simple PDF using wkhtmltopdf directly
+        _logger.info("Using fallback PDF generation")
+        return self._generate_simple_pdf(employees, report_data)
     
     def _generate_simple_pdf(self, employees, report_data):
         """
@@ -137,23 +151,69 @@ class EmployeeExportPdf(EmployeeExportBase):
         """
         # Generate HTML
         html_content = self._generate_html(employees, report_data)
+        _logger.info(f"Generated HTML content, length: {len(html_content)} chars")
         
         # Convert HTML to PDF using wkhtmltopdf
         try:
-            from odoo.tools import pdf
+            import subprocess
+            import tempfile
+            import os
             
-            # Create PDF using Odoo's wkhtmltopdf wrapper
-            IrActionsReport = self.env['ir.actions.report']
-            pdf_content = IrActionsReport._run_wkhtmltopdf(
-                [html_content.encode('utf-8')],
-                landscape=True,
-            )
-            return pdf_content
+            # Write HTML to temp file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as html_file:
+                html_file.write(html_content)
+                html_path = html_file.name
             
+            # Create temp file for PDF output
+            pdf_fd, pdf_path = tempfile.mkstemp(suffix='.pdf')
+            os.close(pdf_fd)
+            
+            try:
+                # Run wkhtmltopdf
+                cmd = [
+                    'wkhtmltopdf',
+                    '--orientation', 'Landscape',
+                    '--page-size', 'A4',
+                    '--margin-top', '10mm',
+                    '--margin-bottom', '10mm',
+                    '--margin-left', '10mm',
+                    '--margin-right', '10mm',
+                    '--encoding', 'UTF-8',
+                    '--quiet',
+                    html_path,
+                    pdf_path
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, timeout=60)
+                
+                if result.returncode != 0:
+                    _logger.warning(f"wkhtmltopdf returned non-zero: {result.stderr.decode('utf-8', errors='ignore')}")
+                
+                # Read PDF content
+                with open(pdf_path, 'rb') as pdf_file:
+                    pdf_content = pdf_file.read()
+                
+                if pdf_content:
+                    _logger.info(f"PDF generated via wkhtmltopdf, size: {len(pdf_content)} bytes")
+                    return pdf_content
+                else:
+                    _logger.warning("wkhtmltopdf produced empty PDF")
+                    
+            finally:
+                # Cleanup temp files
+                if os.path.exists(html_path):
+                    os.unlink(html_path)
+                if os.path.exists(pdf_path):
+                    os.unlink(pdf_path)
+                    
+        except FileNotFoundError:
+            _logger.error("wkhtmltopdf not found, please install it")
         except Exception as e:
             _logger.error(f"Error running wkhtmltopdf: {str(e)}")
-            # Return HTML as fallback
-            return html_content.encode('utf-8')
+        
+        # Final fallback: Return HTML as bytes (browser can still display it)
+        _logger.info("Returning HTML as fallback")
+        return html_content.encode('utf-8')
     
     def _generate_html(self, employees, report_data):
         """
@@ -294,10 +354,11 @@ class EmployeeExportPdf(EmployeeExportBase):
         Returns:
             bytes: PDF content
         """
-        report_name = 'yhc_employee_export.report_employee_card'
-        report = self.env.ref(report_name, raise_if_not_found=False)
+        # Gunakan action report untuk employee card
+        report_action_name = 'yhc_employee_export.action_report_employee_card'
+        report = self.env.ref(report_action_name, raise_if_not_found=False)
         
-        if report:
+        if report and report._name == 'ir.actions.report':
             pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                 report,
                 [employee.id],
