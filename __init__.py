@@ -10,3 +10,4 @@ yang terintegrasi dengan module yhc_employee.
 from . import models
 from . import wizards
 from . import controllers
+from . import services

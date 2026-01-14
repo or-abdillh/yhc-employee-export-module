@@ -149,6 +149,55 @@ GRAPH_REGISTRY = {
         'category': 'training',
         'colors': ['#3498DB', '#E6007E', '#27AE60'],
     },
+    
+    # ===== Grafik Workforce Analytics (PRD v1.1) =====
+    'WA01': {
+        'code': 'WA01',
+        'name': 'Payroll vs Non-Payroll per Unit',
+        'chart_type': 'bar',
+        'method': 'payroll_vs_non_payroll',
+        'description': 'Perbandingan karyawan payroll dan non-payroll per unit/divisi',
+        'category': 'workforce_analytics',
+        'colors': ['#714B67', '#017E84'],
+        'is_stacked': True,
+        'uses_snapshot': True,
+        'filters': ['snapshot_date', 'unit_ids'],
+    },
+    'WA02': {
+        'code': 'WA02',
+        'name': 'Total Karyawan per Unit',
+        'chart_type': 'bar',
+        'method': 'total_employee_per_unit',
+        'description': 'Total seluruh karyawan per unit (aggregate semua status)',
+        'category': 'workforce_analytics',
+        'colors': CHART_COLORS,
+        'is_primary': True,  # Grafik utama untuk executive summary
+        'uses_snapshot': True,
+        'filters': ['snapshot_date', 'unit_ids'],
+    },
+    'WA03': {
+        'code': 'WA03',
+        'name': 'Trend Workforce Bulanan',
+        'chart_type': 'line',
+        'method': 'workforce_snapshot_trend',
+        'description': 'Snapshot jumlah karyawan per bulan (12 bulan terakhir)',
+        'category': 'workforce_analytics',
+        'colors': ['#714B67', '#27AE60', '#E74C3C'],
+        'uses_snapshot': True,
+        'is_timeseries': True,
+        'filters': ['unit_id', 'year'],
+    },
+    'WA04': {
+        'code': 'WA04',
+        'name': 'Distribusi Status Kepegawaian',
+        'chart_type': 'pie',
+        'method': 'employment_status_distribution',
+        'description': 'Distribusi status: Tetap, PKWT, SPK, THL, HJU, PNS DPK',
+        'category': 'workforce_analytics',
+        'colors': ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C'],
+        'uses_snapshot': True,
+        'filters': ['snapshot_date', 'unit_ids'],
+    },
 }
 
 # Kategori grafik untuk grouping di UI
@@ -172,6 +221,13 @@ GRAPH_CATEGORIES = {
         'name': 'Pelatihan',
         'description': 'Grafik data pelatihan',
         'graphs': ['G20', 'G21'],
+    },
+    'workforce_analytics': {
+        'name': 'Workforce Analytics',
+        'description': 'Grafik analitik tenaga kerja berbasis snapshot (PRD v1.1)',
+        'graphs': ['WA01', 'WA02', 'WA03', 'WA04'],
+        'uses_snapshot': True,
+        'is_executive': True,
     },
 }
 
@@ -222,3 +278,63 @@ def get_graph_selection():
         list: List of tuples (code, name)
     """
     return [(code, graph['name']) for code, graph in GRAPH_REGISTRY.items()]
+
+
+def get_workforce_analytics_graphs():
+    """
+    Mendapatkan daftar grafik workforce analytics (PRD v1.1).
+    
+    Returns:
+        list: List definisi grafik workforce analytics
+    """
+    return get_graphs_by_category('workforce_analytics')
+
+
+def get_snapshot_based_graphs():
+    """
+    Mendapatkan daftar grafik yang menggunakan snapshot data.
+    
+    Returns:
+        list: List definisi grafik berbasis snapshot
+    """
+    return [
+        graph for graph in GRAPH_REGISTRY.values()
+        if graph.get('uses_snapshot', False)
+    ]
+
+
+def get_executive_graphs():
+    """
+    Mendapatkan daftar grafik untuk Executive Summary.
+    
+    Returns:
+        list: List definisi grafik dengan is_primary atau untuk executive report
+    """
+    primary_graphs = [
+        graph for graph in GRAPH_REGISTRY.values()
+        if graph.get('is_primary', False)
+    ]
+    
+    # Add WA02 as mandatory executive graph
+    if 'WA02' in GRAPH_REGISTRY and GRAPH_REGISTRY['WA02'] not in primary_graphs:
+        primary_graphs.insert(0, GRAPH_REGISTRY['WA02'])
+    
+    return primary_graphs
+
+
+def get_graph_selection_by_category():
+    """
+    Mendapatkan selection grouped by category.
+    
+    Returns:
+        dict: {category_name: [(code, name), ...]}
+    """
+    result = {}
+    for cat_code, cat_info in GRAPH_CATEGORIES.items():
+        cat_name = cat_info['name']
+        result[cat_name] = [
+            (code, GRAPH_REGISTRY[code]['name'])
+            for code in cat_info['graphs']
+            if code in GRAPH_REGISTRY
+        ]
+    return result
