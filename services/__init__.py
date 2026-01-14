@@ -12,6 +12,9 @@ Package ini berisi service classes untuk berbagai format export:
 - EmployeeExportBpjsTk: Export format BPJS Ketenagakerjaan
 - EmployeeExportRegulatory: Facade untuk export regulatory
 - EmployeeExportGraphPdf: Export grafik dashboard ke PDF
+- EmployeeAnalyticsService: Centralized analytics service (PRD v1.1)
+- AdvancedGraphRenderer: Advanced chart rendering untuk PDF (PRD v1.1)
+- WorkforceReportService: Official Workforce Report Engine (PRD v1.1)
 """
 
 from . import export_base
@@ -23,6 +26,9 @@ from . import export_bpjs_kes
 from . import export_bpjs_tk
 from . import export_regulatory
 from . import export_graph_pdf
+from . import employee_analytics_service
+from . import advanced_graph_renderer
+from . import workforce_report_service
 
 # Re-export untuk kemudahan import
 from .export_base import EmployeeExportBase, FIELD_MAPPINGS
@@ -34,3 +40,6 @@ from .export_bpjs_kes import EmployeeExportBpjsKes
 from .export_bpjs_tk import EmployeeExportBpjsTk
 from .export_regulatory import EmployeeExportRegulatory
 from .export_graph_pdf import EmployeeExportGraphPdf
+from .employee_analytics_service import EmployeeAnalyticsService
+from .advanced_graph_renderer import AdvancedGraphRenderer
+from .workforce_report_service import WorkforceReportService

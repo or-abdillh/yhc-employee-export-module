@@ -10,6 +10,8 @@ Package ini berisi:
 - export_security_mixin: Mixin untuk security dan validasi akses
 - graph_registry: Registry definisi grafik untuk export
 - export_graph_config: Model konfigurasi export grafik
+- hr_employee_snapshot: Model snapshot data karyawan (PRD v1.1)
+- workforce_report_service: Workforce Report Service Model (PRD v1.1)
 """
 
 from . import export_config
@@ -19,3 +21,5 @@ from . import export_audit_log
 from . import export_security_mixin
 from . import graph_registry
 from . import export_graph_config
+from . import hr_employee_snapshot
+from . import workforce_report_service

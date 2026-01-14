@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Views: Workforce Report Wizard
+        Official Workforce Report Engine - PRD v1.1
+        
+        STRICT INTERFACE:
+        - User can ONLY select Month and Year
+        - No chart selection
+        - No layout options
+        - No filter options
+    -->
+    
+    <!-- Form View: Workforce Report Wizard -->
+    <record id="view_workforce_report_wizard_form" model="ir.ui.view">
+        <field name="name">workforce.report.wizard.form</field>
+        <field name="model">workforce.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Workforce Report">
+                <header>
+                    <!-- State: Select Period -->
+                    <button name="action_validate_period" 
+                            string="Validasi Periode" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="state != 'select'"/>
+                    
+                    <!-- State: Ready to Generate -->
+                    <button name="action_generate_report" 
+                            string="📄 Generate Laporan PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="state != 'ready'"
+                            confirm="Laporan akan digenerate berdasarkan data snapshot. Lanjutkan?"/>
+                    
+                    <button name="action_back" 
+                            string="↩️ Ubah Periode" 
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'select'"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="select,ready,done"/>
+                </header>
+                
+                <sheet>
+                    <!-- Report Title -->
+                    <div class="oe_title" style="text-align: center; margin-bottom: 20px;">
+                        <h1 style="color: #714B67;">
+                            <span class="o_field_widget">WORKFORCE REPORT ENGINE</span>
+                        </h1>
+                        <h3 style="color: #017E84;">
+                            Official Workforce Structural Report
+                        </h3>
+                    </div>
+                    
+                    <!-- Warning: Snapshot not available -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="snapshot_available or not report_month or not report_year">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size: 24px; margin-right: 15px;">⚠️</span>
+                            <div>
+                                <strong>SNAPSHOT TIDAK TERSEDIA</strong><br/>
+                                <field name="snapshot_message" readonly="1"/>
+                            </div>
+                        </div>
+                        <button name="action_generate_snapshot" 
+                                string="Generate Snapshot Sekarang" 
+                                type="object" 
+                                class="btn-warning mt-2"/>
+                    </div>
+                    
+                    <!-- Success: Snapshot available -->
+                    <div class="alert alert-success" role="alert"
+                         invisible="not snapshot_available">
+                        <span style="font-size: 18px; margin-right: 10px;">✅</span>
+                        <field name="snapshot_message" readonly="1"/>
+                    </div>
+                    
+                    <!-- Download Section (State: Done) -->
+                    <div class="alert alert-info" role="alert"
+                         invisible="state != 'done'">
+                        <div style="text-align: center;">
+                            <h3>📥 Laporan Berhasil Digenerate</h3>
+                            <p>Klik tombol di bawah untuk mengunduh file PDF.</p>
+                            <field name="output_file" filename="output_filename" readonly="1"/>
+                            <field name="output_filename" invisible="1"/>
+                        </div>
+                    </div>
+                    
+                    <!-- Period Selection (ONLY ALLOWED INPUT) -->
+                    <group string="📅 Pilih Periode Laporan" invisible="state == 'done'">
+                        <group>
+                            <field name="report_month" widget="selection"/>
+                            <field name="report_year"/>
+                        </group>
+                        <group>
+                            <field name="period_display" readonly="1" string="Periode Terpilih"/>
+                            <field name="snapshot_count" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Hidden fields for computation -->
+                    <field name="snapshot_available" invisible="1"/>
+                    <field name="company_name" invisible="1"/>
+                    <field name="company_logo" invisible="1"/>
+                    
+                    <!-- Information Box - Full Width -->
+                    <div class="alert alert-light mt-4" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; width: 100%;" invisible="state == 'done'">
+                        <h4 style="color: #714B67; margin-bottom: 15px;">ℹ️ Tentang Workforce Report Engine</h4>
+                        
+                        <p><strong>Laporan ini bersifat RESMI dan FINAL.</strong></p>
+                        
+                        <ul style="margin-bottom: 15px;">
+                            <li>Data diambil dari <strong>snapshot akhir bulan</strong></li>
+                            <li>Struktur laporan <strong>tetap dan tidak dapat diubah</strong></li>
+                            <li>Angka yang dihasilkan <strong>konsisten dan dapat diaudit</strong></li>
+                            <li>Laporan yang sama akan menghasilkan <strong>output identik</strong></li>
+                        </ul>
+                        
+                        <p style="margin-bottom: 10px;"><strong>Komponen Laporan (Fixed):</strong></p>
+                        <ol>
+                            <li>Tabel Payroll vs Non-Payroll per Unit</li>
+                            <li>Grafik Payroll vs Non-Payroll per Unit</li>
+                            <li>Grafik Total Karyawan per Unit</li>
+                            <li>Snapshot Bulanan per Unit (Jan-Des)</li>
+                            <li>Distribusi Status Kepegawaian</li>
+                        </ol>
+                        
+                        <p style="color: #666; font-size: 11px; margin-top: 15px;">
+                            <em>Catatan: Laporan ini berbeda dengan Export Workforce Analytics yang bersifat eksploratif.
+                            Workforce Report Engine didesain untuk kebutuhan pelaporan resmi dan audit.</em>
+                        </p>
+                    </div>
+                    
+                </sheet>
+                
+                <footer invisible="state != 'select'">
+                    <button name="action_validate_period" 
+                            string="Validasi &amp; Lanjutkan" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="not snapshot_available"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+                
+                <footer invisible="state != 'ready'">
+                    <button name="action_generate_report" 
+                            string="Generate Laporan PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            confirm="Laporan akan digenerate. Lanjutkan?"/>
+                    <button name="action_back" 
+                            string="Kembali" 
+                            type="object"
+                            class="btn-secondary"/>
+                </footer>
+                
+                <footer invisible="state != 'done'">
+                    <button name="action_back" 
+                            string="Generate Periode Lain" 
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Tutup" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Action: Open Workforce Report Wizard -->
+    <record id="action_workforce_report_wizard" model="ir.actions.act_window">
+        <field name="name">Workforce Report</field>
+        <field name="res_model">workforce.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+    
+</odoo>

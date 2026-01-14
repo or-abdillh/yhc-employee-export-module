@@ -106,6 +106,26 @@
             groups="group_hr_export_user"
         />
         
+        <!-- Menu: Export Workforce Analytics (PRD v1.1) -->
+        <menuitem
+            id="menu_hr_employee_export_workforce"
+            name="Export Workforce Analytics"
+            parent="menu_hr_employee_export"
+            action="action_hr_employee_export_workforce_wizard"
+            sequence="25"
+            groups="group_hr_export_manager"
+        />
+        
+        <!-- Menu: Workforce Report (Official Report Engine - PRD v1.1) -->
+        <menuitem
+            id="menu_workforce_report"
+            name="Workforce Report (Official)"
+            parent="menu_hr_employee_export"
+            action="action_workforce_report_wizard"
+            sequence="30"
+            groups="group_hr_export_manager"
+        />
+        
         <!-- Submenu: Konfigurasi -->
         <menuitem
             id="menu_hr_employee_export_config"
@@ -152,6 +172,16 @@
             parent="menu_hr_employee_export_config"
             action="action_hr_employee_export_audit_log"
             sequence="30"
+            groups="group_hr_export_manager"
+        />
+        
+        <!-- Menu: Employee Snapshots (PRD v1.1) -->
+        <menuitem
+            id="menu_hr_employee_snapshot"
+            name="Employee Snapshots"
+            parent="menu_hr_employee_export_config"
+            action="action_hr_employee_snapshot"
+            sequence="35"
             groups="group_hr_export_manager"
         />
         

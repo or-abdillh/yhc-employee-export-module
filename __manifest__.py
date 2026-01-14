@@ -7,11 +7,12 @@
 # - Export data ke berbagai format (Excel, CSV, PDF, JSON)
 # - Template laporan yang customizable
 # - Format export sesuai regulasi (BPJS, Pajak)
+# - Workforce Analytics dengan snapshot data (PRD v1.1)
 {
     'name': 'YHC Employee Export & Analytics',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Human Resources/Employees',
-    'summary': 'Export data karyawan dan dashboard analytics',
+    'summary': 'Export data karyawan dan dashboard analytics dengan workforce analytics',
     'description': """
         YHC Employee Export & Analytics
         ================================
@@ -42,6 +43,21 @@
         - Format BPJS Ketenagakerjaan
         - Format pelaporan pajak
         
+        **Workforce Analytics (PRD v1.1):**
+        - Snapshot data karyawan per bulan
+        - Grafik Payroll vs Non-Payroll per Unit (WA01)
+        - Grafik Total Karyawan per Unit (WA02)
+        - Trend Workforce Bulanan (WA03)
+        - Distribusi Status Kepegawaian (WA04)
+        - Export PDF untuk Executive Summary
+        
+        **Workforce Report Engine (PRD v1.1):**
+        - Official Workforce Structural Report
+        - Snapshot-based reporting (end-of-month)
+        - Fixed structure PDF output
+        - Audit-ready with reconciliation validation
+        - Unit-centric aggregation
+        
         Module ini terintegrasi dengan module yhc_employee.
     """,
     'author': 'Oka Rajeb Abdillah - Digitaliz',
@@ -53,6 +69,9 @@
         'web',
         'mail',
     ],
+    'external_dependencies': {
+        'python': ['matplotlib', 'numpy'],
+    },
     'data': [
         # Security
         'security/export_security.xml',
@@ -62,12 +81,19 @@
         # Reports
         'reports/employee_export_report.xml',
         'reports/bpjs_report.xml',
+        'reports/workforce_analytics_report.xml',
+        'reports/workforce_official_report.xml',
         # Views - wizard harus sebelum menu karena menu mereferensikan action wizard
         'views/export_wizard_views.xml',
         'views/export_graph_views.xml',
+        'views/export_workforce_views.xml',
+        'views/workforce_report_views.xml',
         'views/seed_wizard_views.xml',
         'views/audit_log_views.xml',
         'views/menu_views.xml',
+        # Security rules for new models (loaded after models are registered)
+        'security/snapshot_security.xml',
+        'security/workforce_report_security.xml',
     ],
     'assets': {
         'web.assets_backend': [

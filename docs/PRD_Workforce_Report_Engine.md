@@ -1,0 +1,308 @@
+# 📄 PRD – Workforce Report Engine
+
+## **Official Workforce Structural Report**
+
+**Version:** 1.1
+**Status:** New Feature (Dedicated Engine)
+**Audience:** HR Manager, Management, Foundation Executive
+**Primary Output:** PDF (Official, Authoritative Report)
+
+---
+
+## 1. LATAR BELAKANG
+
+Organisasi membutuhkan sebuah **laporan resmi struktur SDM** yang digunakan sebagai sumber kebenaran untuk:
+
+* Pelaporan internal yayasan
+* Monitoring komposisi dan pertumbuhan SDM
+* Audit dan rekonsiliasi data ketenagakerjaan
+* Bahan presentasi manajemen dan eksekutif
+
+Karakteristik utama laporan yang dibutuhkan:
+
+* Angka **harus stabil dan tidak berubah**
+* Struktur **tetap dan tidak fleksibel**
+* Penyajian **berbasis unit organisasi**
+* Menggunakan **cut-off akhir bulan (snapshot)**
+
+Fitur dashboard analytics dan export grafik generik **tidak memenuhi kebutuhan ini** karena bersifat eksploratif, real-time, dan tidak audit-ready.
+
+---
+
+## 2. TUJUAN PRODUK
+
+Workforce Report Engine bertujuan untuk:
+
+1. Menghasilkan **laporan resmi struktur SDM yayasan** dalam bentuk PDF
+2. Menghilangkan proses manual (olah data → grafik → PDF)
+3. Menjamin:
+
+   * Konsistensi angka
+   * Reproducibility laporan
+   * Auditability data
+4. Menyediakan laporan yang **konsisten secara struktur dan makna** untuk seluruh periode
+
+---
+
+## 3. PRINSIP UTAMA (NON-NEGOTIABLE)
+
+1. **Snapshot-based ONLY** (cut-off akhir bulan)
+2. **Unit organisasi adalah primary dimension**
+3. **Tidak ada grafik eksploratif atau dinamis**
+4. **Angka harus dapat direkonsiliasi**
+5. **PDF adalah dokumen otoritatif**
+6. **Struktur laporan dikunci oleh sistem**
+
+---
+
+## 4. RUANG LINGKUP
+
+### 4.1 In Scope
+
+* Workforce Snapshot bulanan
+* Agregasi SDM berbasis unit
+* Grafik struktural tetap
+* PDF resmi siap cetak
+
+### 4.2 Out of Scope
+
+* Dashboard interaktif
+* Filter dinamis bebas
+* Drill-down ke data employee
+* Export format selain PDF
+
+---
+
+## 5. DEFINISI DATA INTI
+
+### 5.1 Primary Dimension
+
+| Dimensi  | Keterangan                 |
+| -------- | -------------------------- |
+| Unit     | Sekolah / Divisi / Entitas |
+| Snapshot | Kondisi akhir bulan        |
+
+---
+
+### 5.2 Employment Classification (FIXED & SYSTEM-OWNED)
+
+| Kategori    | Keterangan             |
+| ----------- | ---------------------- |
+| Payroll     | Karyawan payroll       |
+| Non Payroll | Karyawan non payroll   |
+| Tetap       | Pegawai tetap          |
+| PKWT        | Kontrak                |
+| SPK         | Surat Perjanjian Kerja |
+| THL         | Tenaga Harian Lepas    |
+| HJU         | Honorer Jasa Umum      |
+| PNS DPK     | PNS Dipekerjakan       |
+
+❗ Kategori **tidak boleh disederhanakan, digabung, atau diubah**
+
+---
+
+## 6. WORKFORCE SNAPSHOT (FOUNDATION)
+
+### 6.1 Snapshot Rules
+
+* Snapshot dibuat **per akhir bulan**
+* Snapshot bersifat **immutable (tidak boleh diubah)**
+* Semua laporan **WAJIB menggunakan snapshot**
+* Snapshot tetap disimpan walau employee sudah non-aktif
+
+### 6.2 Snapshot Data Structure
+
+```
+workforce_snapshot
+- employee_id
+- unit_id
+- gender (L / P)
+- employment_type (payroll / non_payroll)
+- employment_status (tetap, pkwt, spk, thl, hju, pns_dpk)
+- snapshot_month
+- snapshot_year
+- is_active
+```
+
+---
+
+## 7. KOMPONEN LAPORAN (WAJIB ADA)
+
+Semua komponen di bawah **WAJIB ada** dan merupakan bagian inti laporan resmi.
+
+---
+
+### 7.1 Tabel Payroll vs Non Payroll per Unit
+
+**Output:**
+
+* Unit
+* Payroll (L / P)
+* Non Payroll (L / P)
+* Total per unit
+
+📌 Tabel ini adalah **sumber kebenaran utama** untuk grafik terkait
+
+---
+
+### 7.2 Grafik Payroll vs Non Payroll per Unit
+
+* **Tipe:** Bar Chart
+* **X-axis:** Unit
+* **Y-axis:** Jumlah karyawan
+
+📌 Nilai **HARUS identik** dengan tabel 7.1
+
+---
+
+### 7.3 Grafik Total Karyawan per Unit
+
+**Judul wajib:**
+
+> JUMLAH KARYAWAN (TERMASUK STATUS KHUSUS)
+
+* **Tipe:** Bar Chart
+* **Perhitungan:**
+
+```
+Total = Payroll + Non Payroll + HJU + PNS DPK
+```
+
+📌 Ini adalah grafik utama laporan
+
+---
+
+### 7.4 Snapshot Bulanan per Unit (Jan–Dec)
+
+* **Tipe:** Tabel (grafik opsional jika diperlukan)
+* **Aturan:**
+
+  * Nilai diambil dari snapshot
+  * Tidak ada interpolasi
+  * Tidak ada data real-time
+
+---
+
+### 7.5 Distribusi Status Kepegawaian
+
+**Kategori:**
+
+* Tetap
+
+* PKWT
+
+* SPK
+
+* THL
+
+* HJU
+
+* PNS DPK
+
+* **Tipe Grafik:** Pie atau Stacked Bar
+
+* **Aturan:** Total harus dapat direkonsiliasi
+
+---
+
+## 8. ALUR PENGGUNAAN (USER FLOW)
+
+```
+Menu: Workforce Report
+   ↓
+Pilih Bulan & Tahun
+   ↓
+Generate Report
+   ↓
+PDF Terbentuk (Read-only)
+```
+
+❗ Tidak ada pilihan grafik
+❗ Tidak ada filter bebas
+
+---
+
+## 9. STRUKTUR PDF (FIXED)
+
+1. Header
+
+   * Nama Organisasi
+   * Judul Laporan
+   * Bulan & Tahun
+2. Tabel Payroll vs Non Payroll
+3. Grafik Payroll vs Non Payroll
+4. Grafik Total Karyawan per Unit
+5. Snapshot Bulanan
+6. Distribusi Status Kepegawaian
+7. Footer
+
+   * Generated by system
+   * Timestamp
+   * User
+
+---
+
+## 10. STANDAR VISUAL
+
+| Aspek     | Standar      |
+| --------- | ------------ |
+| Warna     | Flat, netral |
+| Font      | QWeb default |
+| Resolusi  | ≥300 DPI     |
+| Orientasi | Landscape    |
+
+---
+
+## 11. VALIDASI & ATURAN DATA
+
+1. Total harus konsisten antar tabel & grafik
+2. Jika snapshot belum tersedia, laporan **TIDAK boleh dibuat**
+3. Tidak boleh ada:
+
+   * Estimasi
+   * Data real-time
+   * Perubahan angka pasca snapshot
+
+---
+
+## 12. ACCEPTANCE CRITERIA (KRITIS)
+
+| ID    | Kriteria                              |
+| ----- | ------------------------------------- |
+| AC-W1 | Angka stabil dan konsisten            |
+| AC-W2 | Total dapat direkonsiliasi            |
+| AC-W3 | Snapshot digunakan 100%               |
+| AC-W4 | PDF siap cetak dan tidak editable     |
+| AC-W5 | Laporan identik saat digenerate ulang |
+
+---
+
+## 13. RISIKO & MITIGASI
+
+| Risiko                  | Mitigasi      |
+| ----------------------- | ------------- |
+| Snapshot belum tersedia | Blok report   |
+| Mapping status salah    | Enum dikunci  |
+| Permintaan filter user  | Edukasi scope |
+
+---
+
+## 14. POSISI PRODUK
+
+**Workforce Report Engine BUKAN:**
+
+* Export grafik
+* Dashboard analytics
+
+**Workforce Report Engine ADALAH:**
+
+* Sistem laporan resmi
+* Sumber data struktural SDM
+* Artefak audit dan pengambilan keputusan
+
+---
+
+## 15. KESIMPULAN
+
+> Jika laporan ini salah, keputusan manajemen bisa salah.
+> Oleh karena itu fitur ini **HARUS berdiri sendiri, stabil, dan terkontrol**.

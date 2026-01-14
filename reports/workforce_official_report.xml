@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Report: Official Workforce Report
+        Workforce Report Engine - PRD v1.1
+        
+        FIXED STRUCTURE (NON-CONFIGURABLE):
+        1. Header (Organization, Period)
+        2. Table: Payroll vs Non-Payroll per Unit (gender-based)
+        3. Chart: Payroll vs Non-Payroll per Unit
+        4. Chart: Total Workforce per Unit
+        5. Table: Monthly Workforce Snapshot (Jan-Dec)
+        6. Chart: Employment Status Distribution
+        7. Footer (timestamp, user)
+    -->
+    
+    <!-- Paper Format: Landscape A4, 300 DPI (MUST BE DEFINED FIRST) -->
+    <record id="paperformat_workforce_official" model="report.paperformat">
+        <field name="name">Workforce Official Report (Landscape)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">300</field>
+    </record>
+    
+    <!-- Report Action (references paperformat above) -->
+    <record id="action_report_workforce_official" model="ir.actions.report">
+        <field name="name">Official Workforce Report</field>
+        <field name="model">workforce.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_workforce_official_template</field>
+        <field name="report_file">yhc_employee_export.report_workforce_official_template</field>
+        <field name="print_report_name">'Workforce_Report_%s_%s' % (object.report_year, object.report_month)</field>
+        <field name="binding_model_id" ref="model_workforce_report_wizard"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_workforce_official"/>
+    </record>
+    
+    <!-- Main Report Template -->
+    <template id="report_workforce_official_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="report_data" t-value="o.get_report_data()"/>
+                <t t-call="yhc_employee_export.report_workforce_official_document"/>
+            </t>
+        </t>
+    </template>
+    
+    <!-- Document Template -->
+    <template id="report_workforce_official_document">
+        <t t-call="web.external_layout">
+            
+            <!-- Inline CSS -->
+            <style type="text/css">
+                .workforce-report {
+                    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+                    color: #333;
+                    line-height: 1.5;
+                }
+                
+                .workforce-report h1 {
+                    color: #714B67;
+                    font-size: 28px;
+                    font-weight: 700;
+                    margin-bottom: 5px;
+                }
+                
+                .workforce-report h2 {
+                    color: #017E84;
+                    font-size: 18px;
+                    font-weight: 600;
+                    border-bottom: 2px solid #017E84;
+                    padding-bottom: 8px;
+                    margin-top: 30px;
+                    margin-bottom: 15px;
+                }
+                
+                .workforce-report h3 {
+                    color: #555;
+                    font-size: 14px;
+                    font-weight: 600;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                }
+                
+                .report-header {
+                    text-align: center;
+                    padding: 30px 0;
+                    border-bottom: 3px solid #714B67;
+                    margin-bottom: 30px;
+                }
+                
+                .report-header .org-name {
+                    font-size: 16px;
+                    color: #666;
+                    margin-bottom: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                }
+                
+                .report-header .period {
+                    font-size: 20px;
+                    color: #017E84;
+                    font-weight: 500;
+                }
+                
+                .data-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 15px 0;
+                    font-size: 11px;
+                }
+                
+                .data-table th {
+                    background-color: #714B67;
+                    color: white;
+                    padding: 10px 8px;
+                    text-align: center;
+                    font-weight: 600;
+                    border: 1px solid #5a3a52;
+                }
+                
+                .data-table th.header-group {
+                    background-color: #5a3a52;
+                }
+                
+                .data-table td {
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                    text-align: center;
+                }
+                
+                .data-table td.text-left {
+                    text-align: left;
+                }
+                
+                .data-table tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                
+                .data-table tr:hover {
+                    background-color: #f0f0f0;
+                }
+                
+                .data-table tr.total-row {
+                    background-color: #eef2f5;
+                    font-weight: 700;
+                }
+                
+                .data-table tr.total-row td {
+                    border-top: 2px solid #714B67;
+                }
+                
+                .chart-section {
+                    margin: 25px 0;
+                    page-break-inside: avoid;
+                }
+                
+                .chart-container {
+                    text-align: center;
+                    padding: 15px;
+                    background: #fafafa;
+                    border: 1px solid #eee;
+                    border-radius: 8px;
+                }
+                
+                .chart-container img {
+                    max-width: 100%;
+                    height: auto;
+                }
+                
+                .section-divider {
+                    page-break-before: always;
+                }
+                
+                .report-footer {
+                    margin-top: 40px;
+                    padding-top: 20px;
+                    border-top: 1px solid #ddd;
+                    font-size: 10px;
+                    color: #888;
+                }
+                
+                .footer-grid {
+                    display: flex;
+                    justify-content: space-between;
+                }
+                
+                .footer-left {
+                    text-align: left;
+                }
+                
+                .footer-right {
+                    text-align: right;
+                }
+                
+                .kpi-summary {
+                    display: flex;
+                    justify-content: space-around;
+                    margin: 20px 0;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #714B67 0%, #017E84 100%);
+                    border-radius: 10px;
+                }
+                
+                .kpi-card {
+                    text-align: center;
+                    padding: 15px 25px;
+                    background: white;
+                    border-radius: 8px;
+                    min-width: 150px;
+                }
+                
+                .kpi-value {
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #714B67;
+                }
+                
+                .kpi-label {
+                    font-size: 12px;
+                    color: #666;
+                    text-transform: uppercase;
+                }
+                
+                .validation-badge {
+                    display: inline-block;
+                    padding: 5px 15px;
+                    background: #27AE60;
+                    color: white;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+                
+                .month-table td.has-data {
+                    background-color: #e8f5e9;
+                }
+                
+                .month-table td.no-data {
+                    background-color: #fafafa;
+                    color: #ccc;
+                }
+                
+                /* ===== PAGE BREAK CONTROL ===== */
+                /* Prevent page break inside tables */
+                .data-table,
+                table {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside table rows */
+                .data-table tr,
+                table tr {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside chart sections */
+                .chart-section,
+                .chart-container {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside KPI summary */
+                .kpi-summary {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Ensure sections stay together */
+                .report-section {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Allow page break before sections if needed */
+                .section-break-before {
+                    page-break-before: always !important;
+                    break-before: page !important;
+                }
+                
+                /* Keep header with content */
+                h2, h3 {
+                    page-break-after: avoid !important;
+                    break-after: avoid !important;
+                }
+                
+                @media print {
+                    .page {
+                        page-break-after: always;
+                    }
+                    
+                    .section-divider {
+                        page-break-before: always;
+                    }
+                    
+                    /* Force page break control in print */
+                    .data-table,
+                    table,
+                    .chart-section,
+                    .chart-container,
+                    .kpi-summary,
+                    .report-section {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                    
+                    /* Keep table headers with rows */
+                    thead {
+                        display: table-header-group;
+                    }
+                    
+                    /* Keep table footers with content */
+                    tfoot {
+                        display: table-footer-group;
+                    }
+                    
+                    /* Prevent orphan rows */
+                    tr {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                }
+            </style>
+            
+            <div class="page workforce-report">
+                
+                <!-- ===== HEADER SECTION ===== -->
+                <div class="report-header">
+                    <!-- Company Logo -->
+                    <t t-if="o.company_logo">
+                        <img t-att-src="image_data_uri(o.company_logo)" 
+                             style="max-height: 60px; margin-bottom: 15px;"/>
+                    </t>
+                    
+                    <div class="org-name">
+                        <t t-esc="report_data.get('header', {}).get('organization_name', o.company_name)"/>
+                    </div>
+                    
+                    <h1><t t-esc="report_data.get('header', {}).get('report_title', 'LAPORAN STRUKTUR SDM')"/></h1>
+                    
+                    <div class="period">
+                        <t t-esc="report_data.get('header', {}).get('report_subtitle', o.period_display)"/>
+                    </div>
+                    
+                    <!-- Validation Badge -->
+                    <div style="margin-top: 20px;">
+                        <span class="validation-badge">
+                            ✓ Data Snapshot Terverifikasi
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- ===== KPI SUMMARY ===== -->
+                <div class="kpi-summary">
+                    <div class="kpi-card">
+                        <div class="kpi-value">
+                            <t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('total', 0)"/>
+                        </div>
+                        <div class="kpi-label">Total Karyawan</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">
+                            <t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('payroll_total', 0)"/>
+                        </div>
+                        <div class="kpi-label">Payroll</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">
+                            <t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('non_payroll_total', 0)"/>
+                        </div>
+                        <div class="kpi-label">Non-Payroll</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-value">
+                            <t t-esc="report_data.get('section_1_table', {}).get('metadata', {}).get('unit_count', 0)"/>
+                        </div>
+                        <div class="kpi-label">Unit/Departemen</div>
+                    </div>
+                </div>
+                
+                <!-- ===== SECTION 1: PAYROLL VS NON-PAYROLL TABLE ===== -->
+                <div class="report-section">
+                    <h2>1. Distribusi Payroll vs Non-Payroll per Unit</h2>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 25%;">Unit / Departemen</th>
+                                <th colspan="3" class="header-group">Payroll</th>
+                                <th colspan="3" class="header-group">Non-Payroll</th>
+                                <th rowspan="2" style="width: 8%;">Total</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 8%;">L</th>
+                                <th style="width: 8%;">P</th>
+                                <th style="width: 10%;">Subtotal</th>
+                                <th style="width: 8%;">L</th>
+                                <th style="width: 8%;">P</th>
+                                <th style="width: 10%;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="report_data.get('section_1_table', {}).get('rows', [])" t-as="row">
+                                <tr>
+                                    <td class="text-left"><t t-esc="row.get('unit_name', '-')"/></td>
+                                    <td><t t-esc="row.get('payroll_male', 0)"/></td>
+                                    <td><t t-esc="row.get('payroll_female', 0)"/></td>
+                                    <td><strong><t t-esc="row.get('payroll_total', 0)"/></strong></td>
+                                    <td><t t-esc="row.get('non_payroll_male', 0)"/></td>
+                                    <td><t t-esc="row.get('non_payroll_female', 0)"/></td>
+                                    <td><strong><t t-esc="row.get('non_payroll_total', 0)"/></strong></td>
+                                    <td><strong><t t-esc="row.get('total', 0)"/></strong></td>
+                                </tr>
+                            </t>
+                            <!-- Total Row -->
+                            <tr class="total-row">
+                                <td class="text-left"><strong>TOTAL</strong></td>
+                                <td><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('payroll_male', 0)"/></td>
+                                <td><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('payroll_female', 0)"/></td>
+                                <td><strong><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('payroll_total', 0)"/></strong></td>
+                                <td><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('non_payroll_male', 0)"/></td>
+                                <td><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('non_payroll_female', 0)"/></td>
+                                <td><strong><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('non_payroll_total', 0)"/></strong></td>
+                                <td><strong><t t-esc="report_data.get('section_1_table', {}).get('totals', {}).get('total', 0)"/></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- ===== SECTION 2: PAYROLL VS NON-PAYROLL CHART ===== -->
+                <div class="report-section chart-section">
+                    <h3>Grafik: Perbandingan Payroll vs Non-Payroll per Unit</h3>
+                    <div class="chart-container">
+                        <t t-if="report_data.get('chart_1_image')">
+                            <img t-att-src="report_data.get('chart_1_image')" alt="Payroll vs Non-Payroll Chart"/>
+                        </t>
+                        <t t-else="">
+                            <p style="color: #888; padding: 40px;">
+                                [Grafik akan ditampilkan di sini]
+                            </p>
+                        </t>
+                    </div>
+                </div>
+                
+                <!-- Page Break -->
+                <div class="section-divider"/>
+                
+                <!-- ===== SECTION 3: TOTAL WORKFORCE PER UNIT CHART ===== -->
+                <div class="report-section">
+                    <h2>2. Jumlah Karyawan per Unit (Termasuk Status Khusus)</h2>
+                    
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <t t-if="report_data.get('chart_2_image')">
+                                <img t-att-src="report_data.get('chart_2_image')" alt="Total Workforce per Unit"/>
+                            </t>
+                            <t t-else="">
+                                <p style="color: #888; padding: 40px;">
+                                    [Grafik Total Karyawan per Unit]
+                                </p>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Unit Details Table -->
+                <div class="report-section">
+                    <h3>Detail per Unit</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">No</th>
+                                <th style="width: 45%;">Unit / Departemen</th>
+                                <th style="width: 15%;">Payroll</th>
+                                <th style="width: 15%;">Non-Payroll</th>
+                                <th style="width: 20%;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="idx" t-value="1"/>
+                            <t t-foreach="report_data.get('section_1_table', {}).get('rows', [])" t-as="row">
+                                <tr>
+                                    <td><t t-esc="idx"/></td>
+                                    <td class="text-left"><t t-esc="row.get('unit_name', '-')"/></td>
+                                    <td><t t-esc="row.get('payroll_total', 0)"/></td>
+                                    <td><t t-esc="row.get('non_payroll_total', 0)"/></td>
+                                    <td><strong><t t-esc="row.get('total', 0)"/></strong></td>
+                                </tr>
+                                <t t-set="idx" t-value="idx + 1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Page Break -->
+                <div class="section-divider"/>
+                
+                <!-- ===== SECTION 4: MONTHLY SNAPSHOT TABLE ===== -->
+                <div class="report-section">
+                    <h2>3. Snapshot Bulanan per Unit (Januari - Desember)</h2>
+                    
+                    <table class="data-table month-table">
+                        <thead>
+                            <tr>
+                                <t t-foreach="report_data.get('section_4_table', {}).get('headers', [])" t-as="header">
+                                    <th><t t-esc="header"/></th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="report_data.get('section_4_table', {}).get('rows', [])" t-as="row">
+                                <tr>
+                                    <td class="text-left"><t t-esc="row.get('unit_name', '-')"/></td>
+                                    <t t-foreach="range(1, 13)" t-as="m">
+                                        <t t-set="val" t-value="row.get('months', {}).get(m, 0)"/>
+                                        <td t-att-class="'has-data' if val > 0 else 'no-data'">
+                                            <t t-if="val > 0"><t t-esc="val"/></t>
+                                            <t t-else="">-</t>
+                                        </td>
+                                    </t>
+                                    <td><strong><t t-esc="row.get('average', 0)"/></strong></td>
+                                </tr>
+                            </t>
+                            <!-- Total Row -->
+                            <tr class="total-row">
+                                <td class="text-left"><strong>TOTAL</strong></td>
+                                <t t-foreach="range(1, 13)" t-as="m">
+                                    <t t-set="val" t-value="report_data.get('section_4_table', {}).get('totals', {}).get('months', {}).get(m, 0)"/>
+                                    <td>
+                                        <t t-if="val > 0"><t t-esc="val"/></t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                </t>
+                                <td><strong><t t-esc="report_data.get('section_4_table', {}).get('totals', {}).get('average', 0)"/></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p style="font-size: 10px; color: #888; margin-top: 10px;">
+                        Catatan: Nilai "-" menunjukkan data snapshot belum tersedia untuk bulan tersebut.
+                        Rata-rata dihitung dari bulan yang memiliki data.
+                    </p>
+                </div>
+                
+                <!-- Page Break -->
+                <div class="section-divider"/>
+                
+                <!-- ===== SECTION 5: EMPLOYMENT STATUS DISTRIBUTION ===== -->
+                <div class="report-section">
+                    <h2>4. Distribusi Status Kepegawaian</h2>
+                    
+                    <div class="chart-section">
+                        <div class="chart-container">
+                            <t t-if="report_data.get('chart_3_image')">
+                                <img t-att-src="report_data.get('chart_3_image')" alt="Employment Status Distribution"/>
+                            </t>
+                            <t t-else="">
+                                <p style="color: #888; padding: 40px;">
+                                    [Grafik Distribusi Status Kepegawaian]
+                                </p>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Details Table -->
+                <div class="report-section">
+                    <h3>Detail Status Kepegawaian</h3>
+                    <table class="data-table" style="width: 60%; margin: 0 auto;">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Status</th>
+                                <th style="width: 30%;">Jumlah</th>
+                                <th style="width: 30%;">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="chart_data" t-value="report_data.get('section_5_chart', {})"/>
+                            <t t-set="labels" t-value="chart_data.get('labels', [])"/>
+                            <t t-set="values" t-value="chart_data.get('data', [])"/>
+                            <t t-set="pcts" t-value="chart_data.get('percentages', [])"/>
+                            
+                            <t t-foreach="range(len(labels))" t-as="i">
+                                <tr>
+                                    <td class="text-left"><t t-esc="labels[i]"/></td>
+                                    <td><t t-esc="values[i]"/></td>
+                                    <td><t t-esc="pcts[i]"/>%</td>
+                                </tr>
+                            </t>
+                            <tr class="total-row">
+                                <td class="text-left"><strong>TOTAL</strong></td>
+                                <td><strong><t t-esc="chart_data.get('total', 0)"/></strong></td>
+                                <td><strong>100%</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- ===== FOOTER SECTION ===== -->
+                <div class="report-footer">
+                    <div class="footer-grid">
+                        <div class="footer-left">
+                            <strong>Workforce Report Engine</strong><br/>
+                            Laporan ini digenerate secara otomatis berdasarkan data snapshot.<br/>
+                            Angka yang tercantum bersifat final dan dapat diaudit.
+                        </div>
+                        <div class="footer-right">
+                            Generated: <t t-esc="report_data.get('footer', {}).get('generated_at', '')"/><br/>
+                            By: <t t-esc="report_data.get('footer', {}).get('generated_by', '')"/><br/>
+                            <t t-esc="report_data.get('footer', {}).get('company_name', '')"/>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <span class="validation-badge">
+                            Reconciliation: <t t-esc="report_data.get('validation', {}).get('reconciliation_check', 'N/A')"/>
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+        </t>
+    </template>
+    
+</odoo>

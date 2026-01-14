@@ -91,6 +91,11 @@
             </field>
         </record>
         
+        <!-- Admin users should have full access to all export features -->
+        <record id="base.group_system" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_hr_export_manager')), (4, ref('group_hr_regulatory_export'))]"/>
+        </record>
+        
     </data>
     
     <!-- ===== RECORD RULES ===== -->

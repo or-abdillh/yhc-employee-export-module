@@ -5,6 +5,102 @@ Semua perubahan penting pada module ini akan didokumentasikan di file ini.
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.0.1.1.0] - 2025-01-14
+
+### Added - Advanced Graphic Export & Workforce Analytics (PRD v1.1)
+
+#### Data Foundation
+- Model `hr.employee.snapshot`:
+  - Snapshot data karyawan per bulan (immutable)
+  - Fields: employee_id, unit_id, employment_type, employment_status
+  - Employment types: Payroll, Non-Payroll
+  - Employment statuses: Tetap, PKWT, SPK, THL, HJU, PNS DPK
+  - Automatic snapshot generation per end-of-month
+  - SQL constraints untuk unique per employee per period
+  - Immutability enforcement (write protection)
+
+#### Centralized Analytics Service
+- Service `EmployeeAnalyticsService`:
+  - Single source of truth untuk dashboard dan PDF export
+  - Backend-only aggregation (no frontend calculation)
+  - Methods:
+    - `payroll_vs_non_payroll()` - WA01
+    - `total_employee_per_unit()` - WA02
+    - `workforce_snapshot_trend()` - WA03
+    - `employment_status_distribution()` - WA04
+    - `get_executive_summary()` - Complete executive data
+    - `get_kpi_summary()` - KPI metrics
+  - Fallback ke realtime data jika snapshot tidak tersedia
+
+#### New Workforce Analytics Graphs
+- Graph Registry Extended:
+  - WA01: Payroll vs Non-Payroll per Unit (Bar Chart)
+  - WA02: Total Karyawan per Unit (Bar Chart) - Primary/Executive
+  - WA03: Trend Workforce Bulanan (Line Chart)
+  - WA04: Distribusi Status Kepegawaian (Pie Chart)
+  - Category: `workforce_analytics`
+  - All graphs marked as `uses_snapshot: True`
+
+#### Advanced Graph Renderer
+- Service `AdvancedGraphRenderer`:
+  - Backend rendering dengan matplotlib
+  - SVG output (preferred, vector)
+  - PNG fallback (≥300 DPI)
+  - Chart types: bar, stacked_bar, line, pie, horizontal_bar
+  - Value labels on charts
+  - Legend support
+  - Error handling dengan fallback placeholders
+
+#### Export Wizard
+- Wizard `hr.employee.export.workforce.wizard`:
+  - Select graphs WA01-WA04
+  - Select snapshot date (dengan validation)
+  - Filter by unit/department
+  - Layout types: Executive Summary, Full Report, Single Graphs
+  - Generate snapshot button
+  - Export PDF dengan rendered charts
+  - Audit logging
+
+#### QWeb PDF Report
+- Template `report_workforce_analytics_template`:
+  - Cover Page dengan company logo
+  - Executive Summary (KPI cards)
+  - Graph sections dengan title dan description
+  - Chart images embedded
+  - Footer dengan metadata
+  - Custom paper format (A4 Landscape)
+
+#### Security Updates
+- ir.model.access.csv:
+  - Access rules untuk hr.employee.snapshot
+  - Access rules untuk hr.employee.export.workforce.wizard
+  - Access rules untuk hr.employee.analytics.service
+- Record rules:
+  - Snapshot: User read-only, Manager full access
+
+#### Testing
+- Test suite `test_workforce_analytics.py`:
+  - TestEmployeeSnapshot: CRUD, uniqueness, immutability
+  - TestEmployeeAnalyticsService: All WA01-WA04 methods
+  - TestAnalyticsConsistency: Dashboard vs PDF data consistency
+  - TestWorkforceExportWizard: Validation, constraints
+  - TestGraphRegistry: WA graph definitions
+
+### Changed
+- Version bumped to 17.0.1.1.0
+- Module manifest updated with external dependencies (matplotlib, numpy)
+- Graph registry extended with workforce_analytics category
+- Services __init__.py updated with new exports
+
+### Technical Notes
+- Dashboard and PDF MUST use the same analytics source (EmployeeAnalyticsService)
+- All aggregation is backend-only
+- PDF export uses snapshot-based data
+- Frontend is presentational only
+- Export must complete in ≤15 seconds (≤6 graphs)
+
+---
+
 ## [17.0.1.0.0] - 2025-01-15
 
 ### Added

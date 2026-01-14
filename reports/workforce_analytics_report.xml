@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Report: Workforce Analytics PDF
+        Template untuk export laporan workforce analytics (PRD v1.1)
+        
+        Struktur:
+        1. Cover Page
+        2. Executive Summary (KPI)
+        3. Grafik Sections
+        4. Footer Metadata
+    -->
+    
+    <!-- Report Action -->
+    <record id="action_report_workforce_analytics" model="ir.actions.report">
+        <field name="name">Workforce Analytics Report</field>
+        <field name="model">hr.employee.export.workforce.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">yhc_employee_export.report_workforce_analytics_template</field>
+        <field name="report_file">yhc_employee_export.report_workforce_analytics_template</field>
+        <field name="print_report_name">'Workforce_Analytics_%s' % (object.snapshot_date.strftime('%Y%m'))</field>
+        <field name="binding_model_id" ref="model_hr_employee_export_workforce_wizard"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+    
+    <!-- Custom Paper Format (Landscape) -->
+    <record id="paperformat_workforce_analytics" model="report.paperformat">
+        <field name="name">Workforce Analytics Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">25</field>
+        <field name="dpi">300</field>
+    </record>
+    
+    <!-- Main Report Template -->
+    <template id="report_workforce_analytics_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="yhc_employee_export.report_workforce_analytics_document"/>
+            </t>
+        </t>
+    </template>
+    
+    <!-- Document Template -->
+    <template id="report_workforce_analytics_document">
+        <t t-call="web.external_layout">
+            <t t-set="data" t-value="data or {}"/>
+            
+            <!-- Inline Styles -->
+            <style>
+                .workforce-analytics-report {
+                    font-family: 'Roboto', Arial, sans-serif;
+                }
+                .workforce-analytics-report h1,
+                .workforce-analytics-report h2,
+                .workforce-analytics-report h3 {
+                    font-family: 'Roboto', Arial, sans-serif;
+                }
+                .kpi-card {
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                .chart-section {
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* ===== PAGE BREAK CONTROL ===== */
+                /* Prevent page break inside tables */
+                table {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside table rows */
+                table tr {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside chart containers */
+                .chart-container,
+                .chart-image {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Prevent page break inside KPI sections */
+                .kpi-section,
+                .kpi-grid {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Ensure sections stay together */
+                .report-section {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+                
+                /* Keep headers with content */
+                h2, h3, h4 {
+                    page-break-after: avoid !important;
+                    break-after: avoid !important;
+                }
+                
+                @media print {
+                    .cover-page {
+                        min-height: 100vh;
+                    }
+                    
+                    /* Force page break control in print */
+                    table,
+                    .chart-section,
+                    .chart-container,
+                    .chart-image,
+                    .kpi-card,
+                    .kpi-section,
+                    .report-section {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                    
+                    /* Keep table headers with rows */
+                    thead {
+                        display: table-header-group;
+                    }
+                    
+                    /* Keep table footers with content */
+                    tfoot {
+                        display: table-footer-group;
+                    }
+                    
+                    /* Prevent orphan rows */
+                    tr {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                    }
+                }
+            </style>
+            
+            <div class="page workforce-analytics-report">
+                
+                <!-- ===== COVER PAGE ===== -->
+                <t t-if="data.get('include_cover', True)">
+                    <div class="cover-page" style="page-break-after: always;">
+                        <div style="text-align: center; padding-top: 150px;">
+                            <!-- Company Logo -->
+                            <t t-if="o.env.company.logo">
+                                <img t-att-src="image_data_uri(o.env.company.logo)" 
+                                     style="max-height: 100px; margin-bottom: 40px;"/>
+                            </t>
+                            
+                            <!-- Title -->
+                            <h1 style="font-size: 36px; color: #714B67; margin-bottom: 10px;">
+                                <t t-esc="data.get('title', 'Laporan Workforce Analytics')"/>
+                            </h1>
+                            
+                            <!-- Subtitle -->
+                            <h2 style="font-size: 24px; color: #666; margin-bottom: 50px;">
+                                <t t-esc="data.get('subtitle', '')"/>
+                            </h2>
+                            
+                            <!-- Company Name -->
+                            <p style="font-size: 18px; color: #333;">
+                                <t t-esc="data.get('company_name', o.env.company.name)"/>
+                            </p>
+                            
+                            <!-- Unit Filter -->
+                            <p style="font-size: 14px; color: #666; margin-top: 30px;">
+                                <strong>Filter Unit:</strong> <t t-esc="data.get('unit_filter', 'Semua Unit')"/>
+                            </p>
+                            
+                            <!-- Generated Info -->
+                            <div style="position: absolute; bottom: 100px; left: 0; right: 0; text-align: center;">
+                                <p style="font-size: 12px; color: #999;">
+                                    Digenerate pada: <t t-esc="data.get('generated_at', datetime.datetime.now()).strftime('%d %B %Y, %H:%M')"/>
+                                    <br/>
+                                    Oleh: <t t-esc="data.get('user', o.env.user.name)"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                
+                <!-- ===== EXECUTIVE SUMMARY (KPI) ===== -->
+                <t t-if="data.get('include_kpi_summary', True) and data.get('kpi')">
+                    <div class="kpi-summary-section" style="margin-bottom: 30px;">
+                        <h2 style="color: #714B67; border-bottom: 2px solid #714B67; padding-bottom: 10px;">
+                            📊 Ringkasan Eksekutif
+                        </h2>
+                        
+                        <t t-set="kpi" t-value="data.get('kpi', {})"/>
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 20px;">
+                            <!-- Total Karyawan -->
+                            <div class="kpi-card" style="width: 22%; background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #714B67;">
+                                    <t t-esc="kpi.get('total_employees', 0)"/>
+                                </div>
+                                <div style="font-size: 12px; color: #666;">Total Karyawan</div>
+                            </div>
+                            
+                            <!-- Aktif -->
+                            <div class="kpi-card" style="width: 22%; background: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #27AE60;">
+                                    <t t-esc="kpi.get('active_employees', 0)"/>
+                                </div>
+                                <div style="font-size: 12px; color: #666;">Karyawan Aktif</div>
+                            </div>
+                            
+                            <!-- Payroll -->
+                            <div class="kpi-card" style="width: 22%; background: #e3f2fd; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #3498DB;">
+                                    <t t-esc="kpi.get('payroll_count', 0)"/>
+                                </div>
+                                <div style="font-size: 12px; color: #666;">Payroll</div>
+                                <div style="font-size: 10px; color: #999;">
+                                    (<t t-esc="kpi.get('payroll_percentage', 0)"/>%)
+                                </div>
+                            </div>
+                            
+                            <!-- Non-Payroll -->
+                            <div class="kpi-card" style="width: 22%; background: #fce4ec; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                                <div style="font-size: 36px; font-weight: bold; color: #E74C3C;">
+                                    <t t-esc="kpi.get('non_payroll_count', 0)"/>
+                                </div>
+                                <div style="font-size: 12px; color: #666;">Non-Payroll</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gender Distribution -->
+                        <div style="display: flex; justify-content: center; gap: 50px; margin-top: 20px;">
+                            <div style="text-align: center;">
+                                <span style="font-size: 24px;">👨</span>
+                                <span style="font-size: 18px; font-weight: bold; color: #3498DB;">
+                                    <t t-esc="kpi.get('male_count', 0)"/>
+                                </span>
+                                <span style="font-size: 12px; color: #666;"> Pria</span>
+                            </div>
+                            <div style="text-align: center;">
+                                <span style="font-size: 24px;">👩</span>
+                                <span style="font-size: 18px; font-weight: bold; color: #E6007E;">
+                                    <t t-esc="kpi.get('female_count', 0)"/>
+                                </span>
+                                <span style="font-size: 12px; color: #666;"> Wanita</span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                
+                <!-- ===== CHART SECTIONS ===== -->
+                <t t-set="charts" t-value="data.get('charts', [])"/>
+                
+                <t t-foreach="charts" t-as="chart">
+                    <t t-if="not chart.get('error')">
+                        <div class="chart-section" t-attf-style="margin-bottom: 40px; #{'page-break-before: always;' if chart_index > 0 and data.get('layout_type') == 'single_graphs' else ''}">
+                            
+                            <!-- Chart Title -->
+                            <h3 style="color: #333; border-left: 4px solid #714B67; padding-left: 10px; margin-bottom: 5px;">
+                                <t t-esc="chart.get('name', 'Chart')"/>
+                            </h3>
+                            
+                            <!-- Chart Description -->
+                            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                                <t t-esc="chart.get('description', '')"/>
+                            </p>
+                            
+                            <!-- Chart Image -->
+                            <div style="text-align: center; margin: 20px 0;">
+                                <t t-if="chart.get('base64')">
+                                    <img t-attf-src="data:{{ chart.get('mimetype', 'image/png') }};base64,{{ chart.get('base64') }}"
+                                         style="max-width: 100%; max-height: 400px;"/>
+                                </t>
+                                <t t-else="">
+                                    <div style="padding: 50px; background: #f5f5f5; color: #999;">
+                                        Grafik tidak tersedia
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                    
+                    <!-- Error handling -->
+                    <t t-if="chart.get('error')">
+                        <div class="chart-error" style="padding: 20px; background: #fce4ec; border-radius: 8px; margin-bottom: 20px;">
+                            <strong style="color: #c62828;">⚠️ Error pada grafik <t t-esc="chart.get('name', 'Chart')"/>:</strong>
+                            <p style="color: #666; font-size: 12px;"><t t-esc="chart.get('error')"/></p>
+                        </div>
+                    </t>
+                </t>
+                
+                <!-- ===== FOOTER ===== -->
+                <div class="report-footer" style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 10px; color: #999;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: left;">
+                                <t t-esc="data.get('company_name', o.env.company.name)"/>
+                            </td>
+                            <td style="text-align: center;">
+                                Laporan Workforce Analytics - <t t-esc="data.get('subtitle', '')"/>
+                            </td>
+                            <td style="text-align: right;">
+                                Halaman <span class="page"/> / <span class="topage"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+            </div>
+        </t>
+    </template>
+    
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- ===== EMPLOYEE SNAPSHOT RULES (PRD v1.1) ===== -->
+        <!-- 
+            File ini harus di-load setelah model hr.employee.snapshot terdaftar.
+            Dipisahkan dari export_security.xml untuk menghindari dependency issue.
+        -->
+        
+        <!-- Rule: Employee Snapshot - User read only -->
+        <record id="rule_employee_snapshot_user" model="ir.rule">
+            <field name="name">Employee Snapshot: User - Read Only</field>
+            <field name="model_id" ref="model_hr_employee_snapshot"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_hr_export_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+        
+        <!-- Rule: Employee Snapshot - Manager full access -->
+        <record id="rule_employee_snapshot_manager" model="ir.rule">
+            <field name="name">Employee Snapshot: Manager - Full Access</field>
+            <field name="model_id" ref="model_hr_employee_snapshot"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_hr_export_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        
+    </data>
+</odoo>

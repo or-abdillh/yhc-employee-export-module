@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Security: Workforce Report Engine Access Rights
+        Loaded after models are registered
+    -->
+    
+    <!-- Access Rights for workforce.report.wizard -->
+    <record id="access_workforce_report_wizard_user" model="ir.model.access">
+        <field name="name">workforce.report.wizard.user</field>
+        <field name="model_id" ref="model_workforce_report_wizard"/>
+        <field name="group_id" ref="group_hr_export_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    
+    <record id="access_workforce_report_wizard_manager" model="ir.model.access">
+        <field name="name">workforce.report.wizard.manager</field>
+        <field name="model_id" ref="model_workforce_report_wizard"/>
+        <field name="group_id" ref="group_hr_export_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    
+    <!-- Access Rights for workforce.report.service -->
+    <record id="access_workforce_report_service_user" model="ir.model.access">
+        <field name="name">workforce.report.service.user</field>
+        <field name="model_id" ref="model_workforce_report_service"/>
+        <field name="group_id" ref="group_hr_export_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    
+    <record id="access_workforce_report_service_manager" model="ir.model.access">
+        <field name="name">workforce.report.service.manager</field>
+        <field name="model_id" ref="model_workforce_report_service"/>
+        <field name="group_id" ref="group_hr_export_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+    
+</odoo>

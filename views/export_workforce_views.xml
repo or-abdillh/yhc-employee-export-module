@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Views: Workforce Analytics Export Wizard
+        Antarmuka untuk export laporan workforce analytics (PRD v1.1)
+    -->
+    
+    <!-- Form View: Workforce Export Wizard -->
+    <record id="view_hr_employee_export_workforce_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.export.workforce.wizard.form</field>
+        <field name="model">hr.employee.export.workforce.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Workforce Analytics">
+                <header>
+                    <button name="action_export_pdf" 
+                            string="📥 Export PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="state != 'config'"/>
+                    <button name="action_preview" 
+                            string="👁️ Preview" 
+                            type="object"
+                            invisible="state != 'config'"/>
+                    <button name="action_back" 
+                            string="↩️ Kembali" 
+                            type="object"
+                            invisible="state == 'config'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="config,done"/>
+                </header>
+                
+                <sheet>
+                    <!-- Alert jika snapshot tidak tersedia -->
+                    <div class="alert alert-warning" role="alert"
+                         invisible="snapshot_available or not snapshot_date">
+                        <field name="snapshot_warning" readonly="1"/>
+                        <button name="action_generate_snapshot" 
+                                string="Generate Snapshot Sekarang" 
+                                type="object" 
+                                class="btn-sm btn-warning ml-2"/>
+                    </div>
+                    
+                    <!-- Success state -->
+                    <div class="alert alert-success" role="alert"
+                         invisible="state != 'done'">
+                        <strong>✅ Export berhasil!</strong> 
+                        File PDF telah digenerate. Klik tombol download di bawah.
+                    </div>
+                    
+                    <!-- Download output -->
+                    <div invisible="state != 'done'" class="text-center mb-4">
+                        <field name="output_file" filename="output_filename" readonly="1"/>
+                        <field name="output_filename" invisible="1"/>
+                    </div>
+                    
+                    <!-- Config state content -->
+                    <div invisible="state != 'config'">
+                        
+                        <!-- Title -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="report_title" placeholder="Judul Laporan"/>
+                            </h1>
+                            <h3 class="text-muted">
+                                <field name="report_subtitle" readonly="1"/>
+                            </h3>
+                        </div>
+                        
+                        <group>
+                            <!-- Snapshot Selection -->
+                            <group string="📅 Periode Snapshot">
+                                <field name="snapshot_date" widget="date"/>
+                                <field name="snapshot_available" widget="boolean" readonly="1"/>
+                            </group>
+                            
+                            <!-- Layout Options -->
+                            <group string="📄 Layout">
+                                <field name="layout_type" widget="radio"/>
+                                <field name="include_cover"/>
+                                <field name="include_kpi_summary"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <!-- Graph Selection Tab -->
+                            <page string="📊 Pilih Grafik" name="graphs">
+                                <div class="alert alert-info" role="alert">
+                                    <strong>Workforce Analytics (PRD v1.1)</strong><br/>
+                                    Grafik ini menggunakan data snapshot untuk konsistensi laporan historis.
+                                </div>
+                                
+                                <group>
+                                    <group string="Grafik Utama">
+                                        <field name="include_wa02"/>
+                                        <span class="text-muted small" invisible="not include_wa02">
+                                            ⭐ Wajib untuk Executive Summary
+                                        </span>
+                                        <field name="include_wa01"/>
+                                    </group>
+                                    <group string="Grafik Pendukung">
+                                        <field name="include_wa03"/>
+                                        <field name="include_wa04"/>
+                                    </group>
+                                </group>
+                                
+                                <group>
+                                    <field name="graph_count" readonly="1"/>
+                                </group>
+                            </page>
+                            
+                            <!-- Filter Tab -->
+                            <page string="🔍 Filter Data" name="filters">
+                                <group>
+                                    <group string="Filter Unit/Departemen">
+                                        <field name="unit_ids" 
+                                               widget="many2many_tags"
+                                               options="{'no_create': True, 'color_field': 'color'}"/>
+                                        <span class="text-muted small">
+                                            Kosongkan untuk menyertakan semua unit
+                                        </span>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                            <!-- Preview Tab -->
+                            <page string="ℹ️ Preview Info" name="preview">
+                                <field name="preview_info" readonly="1" widget="html"/>
+                                
+                                <div class="mt-4">
+                                    <h4>Keterangan Grafik:</h4>
+                                    <ul>
+                                        <li><strong>WA01 - Payroll vs Non-Payroll:</strong> Bar chart perbandingan karyawan payroll dan non-payroll per unit</li>
+                                        <li><strong>WA02 - Total per Unit:</strong> Bar chart total karyawan per unit (semua status)</li>
+                                        <li><strong>WA03 - Trend Bulanan:</strong> Line chart trend jumlah karyawan 12 bulan terakhir</li>
+                                        <li><strong>WA04 - Status Kepegawaian:</strong> Pie chart distribusi status (Tetap, PKWT, SPK, dll)</li>
+                                    </ul>
+                                </div>
+                            </page>
+                        </notebook>
+                        
+                    </div>
+                    
+                </sheet>
+                
+                <footer invisible="state != 'config'">
+                    <button name="action_export_pdf" 
+                            string="Export PDF" 
+                            type="object" 
+                            class="btn-primary"/>
+                    <button string="Batal" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Action: Open Workforce Export Wizard -->
+    <record id="action_hr_employee_export_workforce_wizard" model="ir.actions.act_window">
+        <field name="name">Export Workforce Analytics</field>
+        <field name="res_model">hr.employee.export.workforce.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_hr_employee_export_workforce_wizard_form"/>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+    
+    <!-- Snapshot Views -->
+    
+    <!-- Tree View: Employee Snapshot -->
+    <record id="view_hr_employee_snapshot_tree" model="ir.ui.view">
+        <field name="name">hr.employee.snapshot.tree</field>
+        <field name="model">hr.employee.snapshot</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Snapshots" default_order="snapshot_year desc, snapshot_month desc">
+                <field name="employee_id"/>
+                <field name="unit_id"/>
+                <field name="employment_type"/>
+                <field name="employment_status"/>
+                <field name="snapshot_month"/>
+                <field name="snapshot_year"/>
+                <field name="is_active"/>
+                <field name="gender" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Form View: Employee Snapshot -->
+    <record id="view_hr_employee_snapshot_form" model="ir.ui.view">
+        <field name="name">hr.employee.snapshot.form</field>
+        <field name="model">hr.employee.snapshot</field>
+        <field name="arch" type="xml">
+            <form string="Employee Snapshot" create="false" edit="false">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        <strong>ℹ️ Data Immutable</strong><br/>
+                        Snapshot data tidak dapat diubah setelah dibuat untuk menjaga integritas laporan historis.
+                    </div>
+                    
+                    <group>
+                        <group string="Karyawan">
+                            <field name="employee_id"/>
+                            <field name="gender"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group string="Periode">
+                            <field name="snapshot_month"/>
+                            <field name="snapshot_year"/>
+                            <field name="snapshot_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Kepegawaian">
+                            <field name="unit_id"/>
+                            <field name="employment_type"/>
+                            <field name="employment_status"/>
+                        </group>
+                        <group string="Info">
+                            <field name="company_id"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Search View: Employee Snapshot -->
+    <record id="view_hr_employee_snapshot_search" model="ir.ui.view">
+        <field name="name">hr.employee.snapshot.search</field>
+        <field name="model">hr.employee.snapshot</field>
+        <field name="arch" type="xml">
+            <search string="Cari Snapshot">
+                <field name="employee_id"/>
+                <field name="unit_id"/>
+                <field name="employment_type"/>
+                <field name="employment_status"/>
+                <separator/>
+                <filter name="active_only" string="Aktif" domain="[('is_active', '=', True)]"/>
+                <filter name="payroll" string="Payroll" domain="[('employment_type', '=', 'payroll')]"/>
+                <filter name="non_payroll" string="Non-Payroll" domain="[('employment_type', '=', 'non_payroll')]"/>
+                <separator/>
+                <filter name="current_year" string="Tahun Ini" 
+                        domain="[('snapshot_year', '=', datetime.datetime.now().year)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_unit" string="Unit" context="{'group_by': 'unit_id'}"/>
+                    <filter name="group_type" string="Tipe" context="{'group_by': 'employment_type'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'employment_status'}"/>
+                    <filter name="group_period" string="Periode" context="{'group_by': 'snapshot_year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Pivot View: Employee Snapshot -->
+    <record id="view_hr_employee_snapshot_pivot" model="ir.ui.view">
+        <field name="name">hr.employee.snapshot.pivot</field>
+        <field name="model">hr.employee.snapshot</field>
+        <field name="arch" type="xml">
+            <pivot string="Snapshot Analytics" sample="1">
+                <field name="unit_id" type="row"/>
+                <field name="employment_type" type="col"/>
+                <field name="employee_id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    
+    <!-- Graph View: Employee Snapshot -->
+    <record id="view_hr_employee_snapshot_graph" model="ir.ui.view">
+        <field name="name">hr.employee.snapshot.graph</field>
+        <field name="model">hr.employee.snapshot</field>
+        <field name="arch" type="xml">
+            <graph string="Snapshot Distribution" type="bar" sample="1">
+                <field name="unit_id"/>
+                <field name="employee_id" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    
+    <!-- Action: Employee Snapshot List -->
+    <record id="action_hr_employee_snapshot" model="ir.actions.act_window">
+        <field name="name">Employee Snapshots</field>
+        <field name="res_model">hr.employee.snapshot</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_hr_employee_snapshot_search"/>
+        <field name="context">{'search_default_active_only': 1, 'search_default_current_year': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Belum ada data snapshot
+            </p>
+            <p>
+                Snapshot data karyawan digunakan untuk laporan historis yang konsisten.
+                Gunakan wizard Export Workforce Analytics untuk generate snapshot otomatis.
+            </p>
+        </field>
+    </record>
+    
+</odoo>
