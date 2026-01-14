@@ -158,9 +158,14 @@ class HrEmployeeAnalytics(models.TransientModel):
         if hasattr(employee, 'x_join_date') and employee.x_join_date:
             return employee.x_join_date
         
-        # Coba dari contract
-        if employee.contract_id and employee.contract_id.date_start:
-            return employee.contract_id.date_start
+        # Coba dari income_start (yhc_employee field)
+        if hasattr(employee, 'income_start') and employee.income_start:
+            return employee.income_start
+        
+        # Coba dari contract (jika hr_contract terinstall)
+        if hasattr(employee, 'contract_id') and employee.contract_id:
+            if hasattr(employee.contract_id, 'date_start') and employee.contract_id.date_start:
+                return employee.contract_id.date_start
         
         # Coba dari first_contract_date
         if hasattr(employee, 'first_contract_date') and employee.first_contract_date:

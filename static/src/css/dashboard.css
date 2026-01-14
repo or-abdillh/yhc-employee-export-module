@@ -5,11 +5,22 @@
  * Mengikuti design system Odoo dengan customisasi untuk module ini.
  */
 
+/* ========== Fix Odoo Parent Overflow ========== */
+/* Ensure parent containers allow scrolling */
+.o_action_manager,
+.o_action_manager > .o_action,
+.o_content {
+    overflow: auto !important;
+    height: auto !important;
+}
+
 /* ========== Container Utama ========== */
 .o_hr_employee_dashboard {
     padding: 24px;
     background-color: #f5f6f8;
     min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* ========== Header ========== */
