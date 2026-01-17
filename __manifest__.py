@@ -61,7 +61,7 @@
         Module ini terintegrasi dengan module yhc_employee.
     """,
     'author': 'Oka Rajeb Abdillah - Digitaliz',
-    'website': 'https://www.digitaliz.id',
+    'website': 'https://github.com/or-abdillh/yhc-employee-export-module',
     'license': 'LGPL-3',
     'depends': [
         'yhc_employee',

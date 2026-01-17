@@ -130,7 +130,7 @@ wkhtmltopdf (untuk PDF export)
 ### 1. Clone Repository
 ```bash
 cd /path/to/odoo/custom-addons
-git clone https://github.com/your-org/yhc_employee_export.git
+git clone https://github.com/or-abdillh/yhc-employee-export-module.git
 ```
 
 ### 2. Install Dependencies
