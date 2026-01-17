@@ -60,6 +60,50 @@ Modul custom Odoo 17 untuk ekspor data karyawan dengan fitur analytics dashboard
 - **Audit Trail**: Log semua aktivitas export
 - **Record Rules**: Pembatasan akses per user/company
 
+### 6. Workforce Report Engine (NEW)
+
+**Official Workforce Structural Report** - Sistem laporan resmi berbasis snapshot untuk pelaporan struktur SDM.
+
+#### Karakteristik Utama:
+- **Snapshot-based**: Data diambil dari snapshot akhir bulan (immutable)
+- **Fixed Structure**: Struktur laporan dikunci oleh sistem
+- **Audit-ready**: Angka stabil dan dapat direkonsiliasi
+- **PDF Output**: Dokumen resmi siap cetak (Landscape A4, 300 DPI)
+
+#### Komponen Laporan:
+1. **Tabel Payroll vs Non-Payroll per Unit**
+   - Breakdown per gender (L/P)
+   - Total per unit dan keseluruhan
+
+2. **Grafik Payroll vs Non-Payroll per Unit**
+   - Bar chart dengan data identik dengan tabel
+
+3. **Grafik Total Karyawan per Unit**
+   - Jumlah = Payroll + Non-Payroll + HJU + PNS DPK
+   - Grafik utama laporan eksekutif
+
+4. **Snapshot Bulanan per Unit**
+   - Tabel historis Jan-Des
+   - Data langsung dari snapshot
+
+5. **Distribusi Status Kepegawaian**
+   - Kategori: Tetap, PKWT, SPK, THL, HJU, PNS DPK
+   - Pie chart dengan total terrekonsiliasi
+
+#### Employment Classification (System-owned):
+| Kategori | Keterangan |
+|----------|------------|
+| Payroll | Karyawan payroll |
+| Non Payroll | Karyawan non-payroll |
+| Tetap | Pegawai tetap |
+| PKWT | Perjanjian Kerja Waktu Tertentu |
+| SPK | Surat Perjanjian Kerja |
+| THL | Tenaga Harian Lepas |
+| HJU | Honorer Jasa Umum |
+| PNS DPK | PNS Diperbantukan |
+
+> ⚠️ **Penting**: Kategori ini TIDAK BOLEH diubah atau digabung karena merupakan sumber kebenaran untuk audit.
+
 ## 💻 Persyaratan Sistem
 
 ### Software Requirements
@@ -70,6 +114,8 @@ Modul custom Odoo 17 untuk ekspor data karyawan dengan fitur analytics dashboard
 ### Python Dependencies
 ```
 xlsxwriter>=3.0.0
+matplotlib>=3.7.0
+numpy>=1.24.0
 wkhtmltopdf (untuk PDF export)
 ```
 
@@ -162,6 +208,41 @@ Atau via command line:
    - WLK
 3. Pilih periode laporan
 4. Klik **Generate Report**
+
+### Workforce Report (Official Report)
+Laporan resmi struktur SDM berbasis snapshot.
+
+#### Generate Snapshot Data
+Sebelum membuat laporan, pastikan snapshot tersedia:
+1. Buka menu **Employees > Export & Analytics > Workforce Report**
+2. Pilih bulan dan tahun
+3. Jika snapshot belum tersedia, klik **Generate Snapshot**
+4. Tunggu proses selesai
+
+#### Generate Report PDF
+1. Buka menu **Employees > Export & Analytics > Workforce Report**
+2. Pilih **Bulan** dan **Tahun**
+3. Sistem akan memvalidasi ketersediaan snapshot
+4. Jika tersedia, klik **Generate Report**
+5. PDF akan di-download otomatis
+
+#### Alur Penggunaan
+```
+Menu: Workforce Report
+        ↓
+  Pilih Bulan & Tahun
+        ↓
+  Validasi Snapshot
+        ↓
+    Generate Report
+        ↓
+  PDF Terbentuk (Read-only)
+```
+
+> ⚠️ **Catatan**: 
+> - Tidak ada pilihan grafik (struktur fixed)
+> - Tidak ada filter bebas
+> - Laporan identik jika di-generate ulang (reproducible)
 
 ## 🔌 API Reference
 
@@ -256,6 +337,48 @@ data = analytics.get_dashboard_data(
 )
 ```
 
+#### Workforce Report Service
+```python
+# Get service instance
+service = env['workforce.report.service'].get_service()
+
+# Validate snapshot exists
+service.validate_snapshot_exists(year=2025, month=1)
+
+# Get payroll vs non-payroll table
+table_data = service.get_payroll_vs_non_payroll_table(2025, 1)
+
+# Get total workforce per unit
+workforce_data = service.get_total_workforce_per_unit(2025, 1)
+
+# Get employment status distribution
+status_data = service.get_employment_status_distribution(2025, 1)
+
+# Get monthly snapshot trend
+trend_data = service.get_monthly_workforce_snapshot(2025)
+
+# Generate complete report data
+report_data = service.generate_complete_report_data(2025, 1)
+```
+
+#### Snapshot Management
+```python
+Snapshot = env['hr.employee.snapshot']
+
+# Check if snapshot exists
+exists = Snapshot.check_snapshot_exists(2025, 1)
+
+# Generate snapshot for a period
+Snapshot.generate_snapshot(2025, 1)
+
+# Get snapshot data
+snapshots = Snapshot.search([
+    ('snapshot_year', '=', 2025),
+    ('snapshot_month', '=', 1),
+    ('is_active', '=', True),
+])
+```
+
 ## 🧪 Testing
 
 ### Run All Tests
@@ -283,6 +406,8 @@ data = analytics.get_dashboard_data(
 | Dashboard Analytics | ✅ Full |
 | Security & Access | ✅ Full |
 | REST API | ✅ Basic |
+| Workforce Report | ✅ Full |
+| Employee Snapshot | ✅ Full |
 
 ## 📁 Struktur Modul
 
@@ -292,59 +417,83 @@ yhc_employee_export/
 ├── __manifest__.py
 ├── controllers/
 │   ├── __init__.py
-│   ├── main.py
-│   └── dashboard_controller.py
+│   ├── dashboard_controller.py
+│   └── export_controller.py
 ├── data/
-│   └── export_data.xml
+│   └── export_template_data.xml
 ├── docs/
 │   ├── PRD_Employee_Export_Analytics.md
+│   ├── PRD_Workforce_Report_Engine.md    # NEW
 │   ├── Prompt_Master.md
 │   └── USER_GUIDE.md
 ├── models/
 │   ├── __init__.py
-│   ├── hr_employee_export_config.py
-│   ├── hr_employee_export_template.py
-│   ├── hr_employee_analytics.py
 │   ├── export_audit_log.py
-│   └── export_security_mixin.py
+│   ├── export_config.py
+│   ├── export_graph_config.py
+│   ├── export_security_mixin.py
+│   ├── export_template.py
+│   ├── graph_registry.py
+│   ├── hr_employee_analytics.py
+│   ├── hr_employee_snapshot.py           # NEW - Snapshot data model
+│   └── workforce_report_service.py       # NEW - Report service wrapper
+├── reports/
+│   ├── bpjs_report.xml
+│   ├── employee_export_report.xml
+│   ├── workforce_analytics_report.xml
+│   └── workforce_official_report.xml     # NEW - Official report template
 ├── security/
+│   ├── export_security.xml
 │   ├── ir.model.access.csv
-│   └── export_security.xml
+│   ├── snapshot_security.xml             # NEW
+│   └── workforce_report_security.xml     # NEW
 ├── services/
 │   ├── __init__.py
+│   ├── advanced_graph_renderer.py        # NEW - Matplotlib renderer
+│   ├── employee_analytics_service.py
 │   ├── export_base.py
-│   ├── export_xlsx.py
-│   ├── export_csv.py
-│   ├── export_json.py
-│   ├── export_pdf.py
 │   ├── export_bpjs_kes.py
 │   ├── export_bpjs_tk.py
-│   ├── export_spt.py
-│   └── export_wlk.py
+│   ├── export_csv.py
+│   ├── export_graph_pdf.py
+│   ├── export_json.py
+│   ├── export_pdf.py
+│   ├── export_regulatory.py
+│   ├── export_xlsx.py
+│   └── workforce_report_service.py       # NEW - Core report service
 ├── static/
 │   ├── description/
 │   │   └── icon.png
 │   └── src/
+│       ├── css/
+│       │   └── dashboard.css
 │       ├── js/
 │       │   └── dashboard.js
-│       └── css/
-│           └── dashboard.css
+│       └── xml/
+│           └── dashboard_templates.xml
 ├── tests/
 │   ├── __init__.py
+│   ├── test_dashboard.py
 │   ├── test_export_config.py
 │   ├── test_export_service.py
-│   ├── test_dashboard.py
-│   └── test_security.py
+│   ├── test_security.py
+│   ├── test_workforce_analytics.py       # NEW
+│   └── test_workforce_report.py          # NEW
 ├── views/
-│   ├── export_config_views.xml
-│   ├── export_template_views.xml
-│   ├── export_wizard_views.xml
-│   ├── dashboard_templates.xml
 │   ├── audit_log_views.xml
-│   └── menu_views.xml
-└── wizard/
+│   ├── export_graph_views.xml
+│   ├── export_wizard_views.xml
+│   ├── export_workforce_views.xml
+│   ├── menu_views.xml
+│   ├── seed_wizard_views.xml
+│   └── workforce_report_views.xml        # NEW
+└── wizards/
     ├── __init__.py
-    └── export_wizard.py
+    ├── export_graph_wizard.py
+    ├── export_wizard.py
+    ├── export_workforce_wizard.py
+    ├── seed_wizard.py
+    └── workforce_report_wizard.py        # NEW - Report wizard
 ```
 
 ## 📝 Changelog

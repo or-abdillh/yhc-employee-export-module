@@ -11,9 +11,10 @@ Panduan lengkap untuk menggunakan module YHC Employee Export & Analytics di Odoo
 5. [Konfigurasi Export](#5-konfigurasi-export)
 6. [Template Export](#6-template-export)
 7. [Export Format Regulasi](#7-export-format-regulasi)
-8. [Audit Log](#8-audit-log)
-9. [API Integration](#9-api-integration)
-10. [FAQ & Troubleshooting](#10-faq--troubleshooting)
+8. [Workforce Report Engine](#8-workforce-report-engine) ⭐ **NEW**
+9. [Audit Log](#9-audit-log)
+10. [API Integration](#10-api-integration)
+11. [FAQ & Troubleshooting](#11-faq--troubleshooting)
 
 ---
 
@@ -27,6 +28,7 @@ YHC Employee Export & Analytics adalah module Odoo 17 yang menyediakan:
 - **Export multi-format** (Excel, CSV, JSON, PDF)
 - **Template export** yang dapat dikustomisasi
 - **Format regulasi** untuk BPJS, SPT, dan WLK
+- **Workforce Report Engine** - Laporan resmi struktur SDM ⭐ **NEW**
 - **Audit trail** untuk tracking aktivitas export
 
 ### Hak Akses
@@ -389,7 +391,186 @@ Format untuk Disnaker:
 
 ---
 
-## 8. Audit Log
+## 8. Workforce Report Engine ⭐ NEW
+
+### Tentang Workforce Report
+
+**Workforce Report Engine** adalah sistem laporan resmi struktur SDM yang berbasis snapshot. Fitur ini dirancang khusus untuk:
+
+- **Pelaporan internal yayasan** - Laporan resmi untuk manajemen
+- **Monitoring komposisi SDM** - Tracking struktur tenaga kerja
+- **Audit dan rekonsiliasi** - Data stabil dan reproducible
+- **Presentasi eksekutif** - Dokumen siap cetak untuk management
+
+### Karakteristik Utama
+
+| Aspek | Deskripsi |
+|-------|-----------|
+| **Snapshot-based** | Data dari cut-off akhir bulan |
+| **Fixed Structure** | Struktur laporan tidak berubah |
+| **Immutable** | Data snapshot tidak dapat diubah |
+| **Reproducible** | Hasil identik jika di-generate ulang |
+| **Audit-ready** | Angka dapat direkonsiliasi |
+
+> ⚠️ **Penting**: Workforce Report BERBEDA dengan Dashboard Analytics dan Export Grafik yang bersifat eksploratif. Laporan ini adalah **sumber kebenaran resmi** untuk data SDM.
+
+### Memahami Snapshot
+
+Snapshot adalah "foto" kondisi karyawan pada akhir bulan tertentu. 
+
+**Prinsip Snapshot:**
+- Diambil per **akhir bulan** (cut-off)
+- Bersifat **immutable** (tidak dapat diubah setelah dibuat)
+- Tetap **tersimpan** walau karyawan sudah non-aktif
+- **Wajib tersedia** sebelum membuat laporan
+
+### Klasifikasi Kepegawaian
+
+Laporan menggunakan klasifikasi fixed yang tidak dapat diubah:
+
+| Kategori | Keterangan | Contoh |
+|----------|------------|--------|
+| **Payroll** | Gaji dari perusahaan | Karyawan tetap, kontrak |
+| **Non-Payroll** | Tidak digaji perusahaan | Outsource, magang |
+| **Tetap** | Pegawai permanen | Karyawan PKWTT |
+| **PKWT** | Kontrak waktu tertentu | Karyawan kontrak |
+| **SPK** | Surat Perjanjian Kerja | Freelance berkontrak |
+| **THL** | Tenaga Harian Lepas | Pekerja harian |
+| **HJU** | Honorer Jasa Umum | Honorer umum |
+| **PNS DPK** | PNS Diperbantukan | PNS dari pemerintah |
+
+> ⚠️ Kategori ini **TIDAK BOLEH** disederhanakan, digabung, atau diubah karena merupakan standar audit.
+
+### Mengakses Workforce Report
+
+1. Buka menu **Employees > Export & Analytics**
+2. Pilih **Workforce Report**
+3. Wizard akan terbuka
+
+### Langkah-langkah Membuat Laporan
+
+#### Langkah 1: Pilih Periode
+
+1. Pilih **Bulan** dari dropdown (Januari - Desember)
+2. Masukkan **Tahun** (contoh: 2025)
+3. Sistem akan menampilkan status snapshot
+
+#### Langkah 2: Validasi Snapshot
+
+Sistem akan mengecek apakah data snapshot tersedia:
+
+| Status | Keterangan | Aksi |
+|--------|------------|------|
+| ✅ **Tersedia** | Data snapshot ada | Lanjut ke generate |
+| ❌ **Tidak tersedia** | Snapshot belum dibuat | Generate snapshot dulu |
+
+**Jika snapshot belum tersedia:**
+1. Klik tombol **Generate Snapshot**
+2. Tunggu proses selesai
+3. Sistem akan menampilkan jumlah data yang di-snapshot
+
+#### Langkah 3: Generate Report
+
+1. Setelah snapshot valid, klik **Generate Report**
+2. Tunggu proses rendering (grafik dibuat di backend)
+3. File PDF akan di-download otomatis
+
+### Komponen Laporan
+
+PDF yang dihasilkan berisi komponen berikut (FIXED, tidak dapat dipilih):
+
+#### 1. Header Laporan
+- Nama organisasi
+- Judul: "Laporan Struktur Tenaga Kerja"
+- Periode: Bulan dan Tahun
+
+#### 2. Tabel Payroll vs Non-Payroll per Unit
+Data tabular dengan kolom:
+- Unit/Departemen
+- Payroll (Laki-laki / Perempuan / Total)
+- Non-Payroll (Laki-laki / Perempuan / Total)
+- Grand Total
+
+#### 3. Grafik Payroll vs Non-Payroll per Unit
+- Tipe: Bar Chart
+- X-axis: Nama Unit
+- Y-axis: Jumlah Karyawan
+- Seri: Payroll, Non-Payroll
+
+#### 4. Grafik Total Karyawan per Unit
+- Judul: "JUMLAH KARYAWAN (TERMASUK STATUS KHUSUS)"
+- Formula: Total = Payroll + Non-Payroll + HJU + PNS DPK
+- **Ini adalah grafik utama laporan**
+
+#### 5. Snapshot Bulanan per Unit
+- Tabel historis Januari - Desember
+- Data langsung dari snapshot
+- Tidak ada interpolasi atau estimasi
+
+#### 6. Distribusi Status Kepegawaian
+- Tipe: Pie Chart
+- Kategori: Tetap, PKWT, SPK, THL, HJU, PNS DPK
+- Total harus sesuai dengan tabel
+
+#### 7. Footer Laporan
+- Timestamp generate
+- User yang generate
+- Keterangan "Generated by system"
+
+### Spesifikasi PDF
+
+| Aspek | Nilai |
+|-------|-------|
+| Ukuran Kertas | A4 Landscape |
+| Resolusi Grafik | ≥300 DPI |
+| Font | Default QWeb |
+| Warna | Flat, netral, profesional |
+
+### Validasi Data
+
+Sistem menjamin konsistensi data:
+
+1. **Total = Tabel = Grafik**: Angka di tabel HARUS sama dengan grafik
+2. **Snapshot-only**: Tidak ada data real-time
+3. **No estimation**: Tidak ada interpolasi data kosong
+4. **Reproducible**: Generate ulang = hasil sama
+
+### Batasan Fitur
+
+Fitur yang **TIDAK tersedia** di Workforce Report:
+
+| ❌ Tidak Ada | Alasan |
+|-------------|--------|
+| Pilih grafik | Struktur fixed |
+| Filter dinamis | Hanya filter periode |
+| Drill-down ke karyawan | Bukan data eksploratif |
+| Export Excel/CSV | Hanya PDF resmi |
+| Edit laporan | Immutable |
+
+### Best Practices
+
+1. **Generate snapshot rutin** di akhir setiap bulan
+2. **Simpan PDF** di arsip dokumen resmi
+3. **Gunakan untuk presentasi** ke manajemen dan yayasan
+4. **Jangan modifikasi** angka di luar sistem
+
+### Troubleshooting
+
+#### Error: "Snapshot tidak tersedia"
+- Klik "Generate Snapshot" untuk membuat data
+- Pastikan ada karyawan aktif di periode tersebut
+
+#### Grafik tidak muncul di PDF
+- Pastikan `matplotlib` dan `numpy` terinstall di server
+- Cek log server untuk error rendering
+
+#### Angka tidak konsisten
+- Hubungi administrator untuk review data snapshot
+- Pastikan tidak ada perubahan data karyawan manual
+
+---
+
+## 9. Audit Log
 
 ### Melihat Log
 
@@ -426,7 +607,7 @@ Gunakan filter untuk mencari log:
 
 ---
 
-## 9. API Integration
+## 10. API Integration
 
 ### Authentication
 
@@ -484,7 +665,7 @@ Response berisi file dalam base64:
 
 ---
 
-## 10. FAQ & Troubleshooting
+## 11. FAQ & Troubleshooting
 
 ### FAQ
 
@@ -503,6 +684,22 @@ A: Pastikan `wkhtmltopdf` sudah terinstall di server. Hubungi administrator sist
 **Q: Bisakah saya schedule export otomatis?**
 
 A: Fitur ini akan tersedia di versi mendatang. Saat ini export harus dilakukan manual.
+
+**Q: Apa perbedaan Workforce Report dengan Dashboard Analytics?**
+
+A: Dashboard Analytics bersifat **eksploratif** (real-time, interaktif, filter bebas), sedangkan Workforce Report bersifat **official** (snapshot-based, fixed structure, audit-ready). Gunakan Dashboard untuk analisis sehari-hari, gunakan Workforce Report untuk laporan resmi ke manajemen.
+
+**Q: Mengapa saya tidak bisa memilih grafik di Workforce Report?**
+
+A: Struktur Workforce Report dikunci oleh sistem untuk menjamin konsistensi. Semua komponen laporan sudah ditentukan sesuai standar pelaporan yayasan.
+
+**Q: Bagaimana jika snapshot belum tersedia?**
+
+A: Klik tombol "Generate Snapshot" di wizard Workforce Report. Snapshot akan dibuat berdasarkan data karyawan aktif pada periode tersebut.
+
+**Q: Bisakah mengubah data snapshot?**
+
+A: Tidak. Snapshot bersifat **immutable** (tidak dapat diubah) untuk menjaga integritas data audit. Jika ada kesalahan data, perbaiki di master karyawan lalu generate snapshot baru untuk periode berikutnya.
 
 ### Troubleshooting
 
@@ -532,6 +729,26 @@ A: Fitur ini akan tersedia di versi mendatang. Saat ini export harus dilakukan m
 - Periksa akses ke field yang dipilih
 - Cek audit log untuk error message
 
+#### Workforce Report: Snapshot tidak tersedia
+- Klik tombol "Generate Snapshot" di wizard
+- Pastikan ada karyawan aktif pada periode tersebut
+- Cek apakah karyawan memiliki department/unit
+
+#### Workforce Report: Grafik tidak muncul di PDF
+- Pastikan `matplotlib` dan `numpy` terinstall: `pip install matplotlib numpy`
+- Cek log server untuk error rendering
+- Pastikan folder temporary writable oleh Odoo
+
+#### Workforce Report: Angka tidak konsisten
+- Angka di tabel dan grafik HARUS sama
+- Jika berbeda, hubungi administrator untuk review
+- Cek apakah ada perubahan data selama proses generate
+
+#### Workforce Report: PDF tidak bisa di-download
+- Pastikan `wkhtmltopdf` versi 0.12.6+ terinstall
+- Cek disk space server
+- Cek permission folder temporary
+
 ---
 
 ## Kontak Support
@@ -544,6 +761,6 @@ Jika mengalami masalah yang tidak tercakup di panduan ini:
 
 ---
 
-*Dokumentasi ini berlaku untuk YHC Employee Export & Analytics versi 17.0.1.0.0*
+*Dokumentasi ini berlaku untuk YHC Employee Export & Analytics versi 17.0.1.1.0*
 
 *Terakhir diupdate: Januari 2025*

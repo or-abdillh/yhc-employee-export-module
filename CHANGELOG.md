@@ -5,6 +5,72 @@ Semua perubahan penting pada module ini akan didokumentasikan di file ini.
 Format berdasarkan [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [17.0.1.2.0] - 2025-01-17
+
+### Added - Workforce Report Engine (PRD v1.1 - Official Report)
+
+Penambahan fitur **Workforce Report Engine** - sistem laporan resmi struktur SDM berbasis snapshot.
+
+#### Workforce Report Service
+- Service `WorkforceReportService`:
+  - Dedicated engine untuk laporan resmi (bukan analytics)
+  - Backend-only aggregation dengan data snapshot
+  - Methods:
+    - `validate_snapshot_exists()` - Validasi ketersediaan snapshot
+    - `get_payroll_vs_non_payroll_table()` - Tabel payroll per unit
+    - `get_payroll_vs_non_payroll_chart()` - Data chart payroll
+    - `get_total_workforce_per_unit()` - Total karyawan per unit
+    - `get_monthly_workforce_snapshot()` - Snapshot bulanan
+    - `get_employment_status_distribution()` - Distribusi status
+    - `generate_complete_report_data()` - Data lengkap report
+
+#### Workforce Report Wizard
+- Wizard `workforce.report.wizard`:
+  - Interface minimal: hanya pilih Bulan & Tahun
+  - Validasi snapshot otomatis
+  - Generate snapshot button
+  - Fixed structure (tidak ada pilihan grafik)
+  - Export PDF langsung
+
+#### Official PDF Report
+- Template `report_workforce_official`:
+  - Cover page dengan logo organisasi
+  - Tabel Payroll vs Non-Payroll per Unit
+  - Grafik Payroll vs Non-Payroll (Bar Chart)
+  - Grafik Total Karyawan per Unit (Bar Chart)
+  - Tabel Snapshot Bulanan
+  - Distribusi Status Kepegawaian (Pie Chart)
+  - Footer dengan metadata
+  - Format: A4 Landscape, 300 DPI
+
+#### Chart Rendering
+- Backend rendering dengan matplotlib
+  - Bar Chart untuk payroll comparison
+  - Bar Chart untuk total workforce
+  - Pie Chart untuk status distribution
+  - SVG output (vector preferred)
+  - PNG fallback dengan resolusi tinggi
+  - Value labels on charts
+
+#### Security
+- Security rules untuk workforce.report.wizard
+- Record rules untuk akses snapshot
+- Audit logging untuk setiap report generation
+
+### Fixed
+- Dashboard scroll issue (overflow hidden from parent containers)
+- `contract_id` AttributeError pada model tanpa field contract
+- Kompatibilitas dengan module yhc_employee yang tidak memiliki contract_id
+
+### Technical Notes
+- Workforce Report **BUKAN** dashboard analytics
+- Struktur laporan **DIKUNCI** oleh sistem
+- Semua data **HARUS** dari snapshot (tidak boleh real-time)
+- Hasil **REPRODUCIBLE** - generate ulang = hasil identik
+- Export harus selesai dalam ≤15 detik
+
+---
+
 ## [17.0.1.1.0] - 2025-01-14
 
 ### Added - Advanced Graphic Export & Workforce Analytics (PRD v1.1)
@@ -274,11 +340,20 @@ dan project ini mengikuti [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 17.0.1.2.0 | 2025-01-17 | Workforce Report Engine - Official structural report |
+| 17.0.1.1.0 | 2025-01-14 | Advanced Graphic Export & Workforce Analytics |
 | 17.0.1.0.0 | 2025-01-15 | Initial release dengan full features |
 
 ---
 
 ## Migration Notes
+
+### Dari versi 17.0.1.1.0 ke 17.0.1.2.0
+- Backup database sebelum upgrade
+- Run `./odoo-bin -u yhc_employee_export` untuk update
+- Model baru: `workforce.report.wizard`, `workforce.report.service`
+- Template baru: `report_workforce_official`
+- Pastikan `matplotlib` dan `numpy` terinstall
 
 ### Dari versi sebelumnya
 Ini adalah release pertama, tidak ada migrasi yang diperlukan.
