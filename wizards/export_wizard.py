@@ -940,7 +940,7 @@ class HrEmployeeExportWizard(models.TransientModel):
         """Write reward & punishment data to Excel sheet."""
         sheet = workbook.add_worksheet('Reward & Punishment')
         
-        headers = ['No', 'NRP', 'Nama', 'Tipe', 'Nama R/P', 'Tanggal', 'Keterangan']
+        headers = ['No', 'NRP', 'Nama Karyawan', 'Tipe', 'Kategori', 'Tanggal', 'Keterangan']
         
         for col, header in enumerate(headers):
             sheet.write(0, col, header, header_format)
@@ -952,13 +952,44 @@ class HrEmployeeExportWizard(models.TransientModel):
                     sheet.write(row, 0, row, cell_format)
                     sheet.write(row, 1, emp.nrp or '-', cell_format)
                     sheet.write(row, 2, emp.name or '-', cell_format)
-                    sheet.write(row, 3, rp.type if hasattr(rp, 'type') else '-', cell_format)
-                    sheet.write(row, 4, rp.name or '-', cell_format)
+                    
+                    # Tipe (reward/punishment)
+                    rp_type = '-'
+                    if hasattr(rp, 'type') and rp.type:
+                        rp_type = 'Reward' if rp.type == 'reward' else 'Punishment'
+                    sheet.write(row, 3, rp_type, cell_format)
+                    
+                    # Kategori berdasarkan tipe
+                    category = '-'
+                    if hasattr(rp, 'type') and rp.type == 'reward':
+                        if hasattr(rp, 'reward_category') and rp.reward_category:
+                            category_map = {
+                                'gathering': 'Gathering',
+                                'program_sekolah': 'Program Sekolah',
+                                'program_yayasan': 'Program Yayasan',
+                            }
+                            category = category_map.get(rp.reward_category, rp.reward_category)
+                    elif hasattr(rp, 'type') and rp.type == 'punishment':
+                        if hasattr(rp, 'punishment_category') and rp.punishment_category:
+                            category_map = {
+                                'st1': 'Surat Teguran 1',
+                                'st2': 'Surat Teguran 2',
+                                'st3': 'Surat Teguran 3',
+                                'sp1': 'Surat Peringatan 1',
+                                'sp2': 'Surat Peringatan 2',
+                                'sp3': 'Surat Peringatan 3',
+                            }
+                            category = category_map.get(rp.punishment_category, rp.punishment_category)
+                    sheet.write(row, 4, category, cell_format)
+                    
+                    # Tanggal
                     if hasattr(rp, 'date') and rp.date:
                         sheet.write(row, 5, rp.date, date_format)
                     else:
                         sheet.write(row, 5, '-', cell_format)
-                    sheet.write(row, 6, rp.description if hasattr(rp, 'description') else '-', cell_format)
+                    
+                    # Keterangan
+                    sheet.write(row, 6, rp.description if hasattr(rp, 'description') and rp.description else '-', cell_format)
                     row += 1
         
         for col, header in enumerate(headers):

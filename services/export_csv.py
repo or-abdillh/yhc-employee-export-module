@@ -478,7 +478,7 @@ class EmployeeExportCsv(EmployeeExportBase):
     
     def _export_rp_detailed(self, employees, writer):
         """Export reward/punishment data in detailed format."""
-        headers = ['No', 'NRP', 'Nama Karyawan', 'Tipe', 'Nama R/P',
+        headers = ['No', 'NRP', 'Nama Karyawan', 'Tipe', 'Kategori',
                    'Tanggal', 'Keterangan']
         writer.writerow(headers)
         
@@ -487,13 +487,41 @@ class EmployeeExportCsv(EmployeeExportBase):
             if hasattr(emp, 'reward_punishment_ids') and emp.reward_punishment_ids:
                 for rp in emp.reward_punishment_ids:
                     rp_date = self.get_field_value(rp, 'date')
+                    rp_type = self.get_field_value(rp, 'type')
+                    
+                    # Get type label
+                    type_label = 'Reward' if rp_type == 'reward' else ('Punishment' if rp_type == 'punishment' else self.empty_value)
+                    
+                    # Get category based on type
+                    category = self.empty_value
+                    if rp_type == 'reward':
+                        reward_cat = self.get_field_value(rp, 'reward_category')
+                        if reward_cat:
+                            category_map = {
+                                'gathering': 'Gathering',
+                                'program_sekolah': 'Program Sekolah',
+                                'program_yayasan': 'Program Yayasan',
+                            }
+                            category = category_map.get(reward_cat, reward_cat)
+                    elif rp_type == 'punishment':
+                        punishment_cat = self.get_field_value(rp, 'punishment_category')
+                        if punishment_cat:
+                            category_map = {
+                                'st1': 'Surat Teguran 1',
+                                'st2': 'Surat Teguran 2',
+                                'st3': 'Surat Teguran 3',
+                                'sp1': 'Surat Peringatan 1',
+                                'sp2': 'Surat Peringatan 2',
+                                'sp3': 'Surat Peringatan 3',
+                            }
+                            category = category_map.get(punishment_cat, punishment_cat)
                     
                     row = [
                         no,
                         self.get_formatted_field_value(emp, 'nrp'),
                         self.get_formatted_field_value(emp, 'name'),
-                        self.get_formatted_field_value(rp, 'type'),
-                        self.get_formatted_field_value(rp, 'name'),
+                        type_label,
+                        category,
                         rp_date.strftime('%d/%m/%Y') if rp_date else self.empty_value,
                         self.get_formatted_field_value(rp, 'description'),
                     ]
