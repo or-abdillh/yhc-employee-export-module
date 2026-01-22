@@ -344,10 +344,50 @@ class WorkforceReportWizard(models.TransientModel):
         # Prepare chart images as base64 for PDF
         report_data = self._prepare_chart_images(report_data)
         
-        # Use QWeb report action
-        report_action = self.env.ref(
-            'yhc_employee_export.action_report_workforce_official'
-        )
+        # Find report action - try multiple methods for robustness
+        report_action = None
+        
+        # Method 1: Try using external ID (env.ref)
+        try:
+            report_action = self.env.ref(
+                'yhc_employee_export.action_report_workforce_official',
+                raise_if_not_found=False
+            )
+        except (ValueError, Exception) as e:
+            _logger.warning(f"Could not find report via env.ref: {e}")
+        
+        # Method 2: Search by report_name if env.ref fails
+        if not report_action:
+            report_action = self.env['ir.actions.report'].search([
+                ('report_name', '=', 'yhc_employee_export.report_workforce_official_template')
+            ], limit=1)
+            
+            if report_action:
+                _logger.info(f"Found report action via search: {report_action.name}")
+        
+        # Method 3: Search by model if still not found
+        if not report_action:
+            report_action = self.env['ir.actions.report'].search([
+                ('model', '=', 'workforce.report.wizard'),
+                ('report_type', '=', 'qweb-pdf'),
+                ('name', 'ilike', 'workforce')
+            ], limit=1)
+            
+            if report_action:
+                _logger.info(f"Found report action via model search: {report_action.name}")
+        
+        # Raise error if report action not found at all
+        if not report_action:
+            raise UserError(_(
+                "Report action 'Official Workforce Report' tidak ditemukan.\n\n"
+                "Kemungkinan penyebab:\n"
+                "1. Module belum di-upgrade dengan benar\n"
+                "2. File report XML tidak terload\n\n"
+                "Solusi:\n"
+                "1. Upgrade module via Apps menu\n"
+                "2. Atau jalankan: odoo -u yhc_employee_export -d database_name\n"
+                "3. Restart Odoo service"
+            ))
         
         # Generate PDF
         pdf_content, content_type = report_action._render_qweb_pdf(
