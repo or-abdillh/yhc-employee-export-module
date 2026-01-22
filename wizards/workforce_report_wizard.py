@@ -347,23 +347,35 @@ class WorkforceReportWizard(models.TransientModel):
         # Find report action - try multiple methods for robustness
         report_action = None
         
-        # Method 1: Try using external ID (env.ref)
-        try:
-            report_action = self.env.ref(
-                'yhc_employee_export.action_report_workforce_official',
-                raise_if_not_found=False
-            )
-        except (ValueError, Exception) as e:
-            _logger.warning(f"Could not find report via env.ref: {e}")
+        # Get actual module name from folder (handles both underscore and dash naming)
+        module_names = [
+            'yhc_employee_export',  # Standard naming
+            'yhc-employee-export-module',  # Production folder naming
+        ]
         
-        # Method 2: Search by report_name if env.ref fails
+        # Method 1: Try using external ID (env.ref) with multiple module names
+        for module_name in module_names:
+            try:
+                report_action = self.env.ref(
+                    f'{module_name}.action_report_workforce_official',
+                    raise_if_not_found=False
+                )
+                if report_action:
+                    _logger.info(f"Found report action via env.ref with module: {module_name}")
+                    break
+            except (ValueError, Exception) as e:
+                _logger.warning(f"Could not find report via env.ref ({module_name}): {e}")
+        
+        # Method 2: Search by report_name if env.ref fails - try multiple naming patterns
         if not report_action:
-            report_action = self.env['ir.actions.report'].search([
-                ('report_name', '=', 'yhc_employee_export.report_workforce_official_template')
-            ], limit=1)
-            
-            if report_action:
-                _logger.info(f"Found report action via search: {report_action.name}")
+            for module_name in module_names:
+                report_action = self.env['ir.actions.report'].search([
+                    ('report_name', '=', f'{module_name}.report_workforce_official_template')
+                ], limit=1)
+                
+                if report_action:
+                    _logger.info(f"Found report action via search: {report_action.name}")
+                    break
         
         # Method 3: Search by model if still not found
         if not report_action:
@@ -389,12 +401,214 @@ class WorkforceReportWizard(models.TransientModel):
                 "3. Restart Odoo service"
             ))
         
-        # Generate PDF
-        pdf_content, content_type = report_action._render_qweb_pdf(
-            report_action.id,
-            res_ids=[self.id],
-            data={'report_data': report_data}
+        # Generate PDF - try QWeb first, fallback to direct PDF generation
+        try:
+            pdf_content, content_type = report_action._render_qweb_pdf(
+                report_action.id,
+                res_ids=[self.id],
+                data={'report_data': report_data}
+            )
+        except ValueError as e:
+            # QWeb template not found - use fallback PDF generation
+            if 'External ID not found' in str(e):
+                _logger.warning(f"QWeb template not found, using fallback PDF generation: {e}")
+                pdf_content = self._generate_fallback_pdf(report_data)
+            else:
+                raise
+        
+        return pdf_content
+    
+    def _generate_fallback_pdf(self, report_data):
+        """
+        Generate PDF report using reportlab when QWeb template is not available.
+        
+        This is a fallback method when the QWeb template external ID is not properly
+        registered in the database.
+        
+        Args:
+            report_data: Report data structure
+            
+        Returns:
+            bytes: PDF content
+        """
+        from io import BytesIO
+        try:
+            from reportlab.lib import colors
+            from reportlab.lib.pagesizes import A4, landscape
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch, cm
+            from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+            from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+        except ImportError:
+            raise UserError(_("Library 'reportlab' tidak tersedia. Silakan install dengan: pip install reportlab"))
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=landscape(A4),
+            rightMargin=1.5*cm,
+            leftMargin=1.5*cm,
+            topMargin=2*cm,
+            bottomMargin=2*cm
         )
+        
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            alignment=TA_CENTER,
+            spaceAfter=12,
+            textColor=colors.HexColor('#2B2E4A')
+        )
+        
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Heading2'],
+            fontSize=12,
+            alignment=TA_CENTER,
+            spaceAfter=20,
+            textColor=colors.HexColor('#666666')
+        )
+        
+        section_style = ParagraphStyle(
+            'SectionTitle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceBefore=20,
+            spaceAfter=10,
+            textColor=colors.HexColor('#2B2E4A')
+        )
+        
+        # Header
+        company_name = report_data.get('company_name', self.env.company.name)
+        period = report_data.get('period_display', f"{self.report_month}/{self.report_year}")
+        
+        elements.append(Paragraph(f"WORKFORCE REPORT", title_style))
+        elements.append(Paragraph(f"{company_name}", subtitle_style))
+        elements.append(Paragraph(f"Periode: {period}", subtitle_style))
+        elements.append(Spacer(1, 20))
+        
+        # Summary section
+        summary = report_data.get('summary', {})
+        elements.append(Paragraph("RINGKASAN", section_style))
+        
+        summary_data = [
+            ['Total Karyawan', str(summary.get('total_employees', 0))],
+            ['Payroll', str(summary.get('total_payroll', 0))],
+            ['Non-Payroll', str(summary.get('total_non_payroll', 0))],
+            ['Jumlah Unit', str(summary.get('total_units', 0))],
+        ]
+        
+        summary_table = Table(summary_data, colWidths=[200, 100])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f5f5f5')),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#333333')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 20))
+        
+        # Table 1: Payroll vs Non-Payroll per Unit
+        elements.append(Paragraph("TABEL 1: PAYROLL VS NON-PAYROLL PER UNIT", section_style))
+        
+        table1_data = report_data.get('table_payroll_nonpayroll', [])
+        if table1_data:
+            # Header row
+            header = ['Unit Kerja', 'Payroll (L)', 'Payroll (P)', 'Total Payroll', 
+                     'Non-Payroll (L)', 'Non-Payroll (P)', 'Total Non-Payroll', 'Grand Total']
+            table_rows = [header]
+            
+            for row in table1_data:
+                table_rows.append([
+                    row.get('unit_name', '-'),
+                    str(row.get('payroll_male', 0)),
+                    str(row.get('payroll_female', 0)),
+                    str(row.get('payroll_total', 0)),
+                    str(row.get('non_payroll_male', 0)),
+                    str(row.get('non_payroll_female', 0)),
+                    str(row.get('non_payroll_total', 0)),
+                    str(row.get('grand_total', 0)),
+                ])
+            
+            t1 = Table(table_rows, repeatRows=1)
+            t1.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2B2E4A')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
+            ]))
+            elements.append(t1)
+        
+        elements.append(Spacer(1, 20))
+        
+        # Employment Status Distribution
+        elements.append(Paragraph("DISTRIBUSI STATUS KEPEGAWAIAN", section_style))
+        
+        status_data = report_data.get('employment_status_distribution', [])
+        if status_data:
+            status_header = ['Status', 'Jumlah', 'Persentase']
+            status_rows = [status_header]
+            
+            for item in status_data:
+                status_rows.append([
+                    item.get('status', '-'),
+                    str(item.get('count', 0)),
+                    f"{item.get('percentage', 0):.1f}%"
+                ])
+            
+            t_status = Table(status_rows, colWidths=[200, 100, 100])
+            t_status.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2B2E4A')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+            ]))
+            elements.append(t_status)
+        
+        elements.append(Spacer(1, 30))
+        
+        # Footer
+        footer_style = ParagraphStyle(
+            'Footer',
+            parent=styles['Normal'],
+            fontSize=8,
+            textColor=colors.HexColor('#999999'),
+            alignment=TA_CENTER
+        )
+        
+        from datetime import datetime
+        generated_at = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        generated_by = self.env.user.name
+        
+        elements.append(Paragraph(
+            f"Generated on {generated_at} by {generated_by} | Workforce Report Engine v1.1",
+            footer_style
+        ))
+        
+        # Build PDF
+        doc.build(elements)
+        
+        pdf_content = buffer.getvalue()
+        buffer.close()
         
         return pdf_content
     
