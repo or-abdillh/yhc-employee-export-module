@@ -642,6 +642,49 @@ class HrEmployeeExportWizard(models.TransientModel):
         except Exception as e:
             _logger.warning(f"Could not log export activity: {str(e)}")
 
+    def _format_service_length(self, value, with_unit=True):
+        """
+        Format nilai service_length dengan aman.
+        
+        Menangani kasus di mana service_length bisa berupa:
+        - Float (mis: 2.5)
+        - Integer (mis: 2)
+        - String (mis: "2 years 3 months" atau "2.5")
+        
+        Args:
+            value: Nilai service_length (bisa float, int, atau string)
+            with_unit: Apakah menambahkan satuan "tahun"
+            
+        Returns:
+            str: Nilai yang sudah di-format
+        """
+        if not value:
+            return '-'
+        
+        try:
+            # Jika sudah berupa string yang mengandung deskripsi lengkap
+            if isinstance(value, str):
+                # Coba konversi ke float jika berbentuk angka
+                try:
+                    numeric_value = float(value.replace(',', '.'))
+                    formatted = f"{numeric_value:.1f}"
+                    return f"{formatted} tahun" if with_unit else formatted
+                except ValueError:
+                    # Jika gagal konversi, kembalikan string asli
+                    return value
+            
+            # Jika berupa numerik (float atau int)
+            if isinstance(value, (int, float)):
+                formatted = f"{float(value):.1f}"
+                return f"{formatted} tahun" if with_unit else formatted
+            
+            # Fallback: konversi ke string
+            return str(value)
+            
+        except Exception as e:
+            _logger.warning(f"Error formatting service_length '{value}': {e}")
+            return str(value) if value else '-'
+
     def _get_custom_export_data(self, employees):
         """Get export data berdasarkan kategori yang dipilih."""
         data = []
@@ -673,7 +716,7 @@ class HrEmployeeExportWizard(models.TransientModel):
                 row['Grade'] = emp.grade_id.name if hasattr(emp, 'grade_id') and emp.grade_id else '-'
                 row['Status'] = emp.employment_status or '-'
                 row['Tanggal Masuk'] = emp.first_contract_date.strftime('%d/%m/%Y') if hasattr(emp, 'first_contract_date') and emp.first_contract_date else '-'
-                row['Masa Kerja'] = f"{emp.service_length:.1f} tahun" if hasattr(emp, 'service_length') and emp.service_length else '-'
+                row['Masa Kerja'] = self._format_service_length(emp.service_length) if hasattr(emp, 'service_length') and emp.service_length else '-'
             
             data.append(row)
         
@@ -741,7 +784,7 @@ class HrEmployeeExportWizard(models.TransientModel):
                 sheet.write(row, 10, emp.first_contract_date, date_format)
             else:
                 sheet.write(row, 10, '-', cell_format)
-            sheet.write(row, 11, f"{emp.service_length:.1f}" if hasattr(emp, 'service_length') and emp.service_length else '-', cell_format)
+            sheet.write(row, 11, self._format_service_length(emp.service_length, with_unit=False) if hasattr(emp, 'service_length') and emp.service_length else '-', cell_format)
             row += 1
         
         for col, header in enumerate(headers):

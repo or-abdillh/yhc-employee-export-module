@@ -514,8 +514,17 @@ class EmployeeExportController(http.Controller):
             emp_type = emp.employee_type_id.name if hasattr(emp, 'employee_type_id') and emp.employee_type_id else 'Tidak Ada'
             analytics['employment_type'][emp_type] = analytics['employment_type'].get(emp_type, 0) + 1
             
-            # Service length
-            service = emp.service_length if hasattr(emp, 'service_length') else 0
+            # Service length - safely handle string or numeric values
+            service_raw = emp.service_length if hasattr(emp, 'service_length') else 0
+            try:
+                if isinstance(service_raw, str):
+                    # Try to extract numeric value from string
+                    service = float(service_raw.replace(',', '.').split()[0]) if service_raw else 0
+                else:
+                    service = float(service_raw) if service_raw else 0
+            except (ValueError, TypeError, AttributeError):
+                service = 0
+            
             if service < 1:
                 analytics['service_length']['< 1 tahun'] += 1
             elif service < 3:

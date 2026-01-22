@@ -219,7 +219,7 @@ class EmployeeExportCsv(EmployeeExportBase):
         tgl_masuk = first_contract.strftime('%d/%m/%Y') if first_contract else self.empty_value
         
         service_length = self.get_field_value(emp, 'service_length')
-        masa_kerja = f"{service_length:.1f} tahun" if service_length else self.empty_value
+        masa_kerja = self._format_service_length(service_length, with_unit=True) if service_length else self.empty_value
         
         return [
             self.get_formatted_field_value(emp, 'department_id.name'),

@@ -220,6 +220,49 @@ class EmployeeExportBase:
         
         return str(value)
     
+    def _format_service_length(self, value, with_unit=True):
+        """
+        Format nilai service_length dengan aman.
+        
+        Menangani kasus di mana service_length bisa berupa:
+        - Float (mis: 2.5)
+        - Integer (mis: 2)
+        - String (mis: "2 years 3 months" atau "2.5")
+        
+        Args:
+            value: Nilai service_length (bisa float, int, atau string)
+            with_unit: Apakah menambahkan satuan "tahun"
+            
+        Returns:
+            str: Nilai yang sudah di-format
+        """
+        if not value:
+            return self.empty_value
+        
+        try:
+            # Jika sudah berupa string yang mengandung deskripsi lengkap
+            if isinstance(value, str):
+                # Coba konversi ke float jika berbentuk angka
+                try:
+                    numeric_value = float(value.replace(',', '.'))
+                    formatted = f"{numeric_value:.1f}"
+                    return f"{formatted} tahun" if with_unit else formatted
+                except ValueError:
+                    # Jika gagal konversi, kembalikan string asli
+                    return value
+            
+            # Jika berupa numerik (float atau int)
+            if isinstance(value, (int, float)):
+                formatted = f"{float(value):.1f}"
+                return f"{formatted} tahun" if with_unit else formatted
+            
+            # Fallback: konversi ke string
+            return str(value)
+            
+        except Exception as e:
+            _logger.warning(f"Error formatting service_length '{value}': {e}")
+            return str(value) if value else self.empty_value
+    
     def get_field_value(self, record, field_path):
         """
         Mengambil nilai field dari record, support dot notation.

@@ -278,7 +278,7 @@ class EmployeeExportXlsx(EmployeeExportBase):
         for idx, emp in enumerate(employees, 1):
             # Get masa kerja
             service_length = self.get_field_value(emp, 'service_length')
-            masa_kerja = f"{service_length:.1f} tahun" if service_length else self.empty_value
+            masa_kerja = self._format_service_length(service_length, with_unit=True) if service_length else self.empty_value
             
             row_data = [
                 idx,
