@@ -235,10 +235,10 @@ class HrEmployeeExportWizard(models.TransientModel):
             
             for emp in employees:
                 html += f'<tr>'
-                html += f'<td>{emp.nrp or "-"}</td>'
-                html += f'<td>{emp.name or "-"}</td>'
-                html += f'<td>{emp.department_id.name or "-"}</td>'
-                html += f'<td>{emp.employment_status or "-"}</td>'
+                html += f'<td>{self._safe_value(emp.nrp)}</td>'
+                html += f'<td>{self._safe_value(emp.name)}</td>'
+                html += f'<td>{self._safe_value(emp.department_id)}</td>'
+                html += f'<td>{self._safe_value(emp.employment_status)}</td>'
                 html += f'</tr>'
             
             html += '</tbody></table>'
@@ -685,6 +685,42 @@ class HrEmployeeExportWizard(models.TransientModel):
             _logger.warning(f"Error formatting service_length '{value}': {e}")
             return str(value) if value else '-'
 
+    def _safe_value(self, value, default='-'):
+        """
+        Safely convert any value to string, returning default for empty/False/None values.
+        
+        This ensures consistent handling of empty fields across all exports,
+        avoiding display of 'FALSE' or empty strings.
+        
+        Args:
+            value: Any value to convert
+            default: Default value to return if empty (default: '-')
+            
+        Returns:
+            str: The value as string or default if empty
+        """
+        # Handle None, False, empty string, empty list
+        if value is None or value is False or value == '' or value == []:
+            return default
+        
+        # Handle empty recordset
+        if hasattr(value, '_name') and len(value) == 0:
+            return default
+        
+        # Handle recordset - get name
+        if hasattr(value, '_name') and len(value) > 0:
+            if hasattr(value, 'name') and value.name:
+                return str(value.name)
+            elif hasattr(value, 'display_name'):
+                return str(value.display_name)
+            return default
+        
+        # Handle numeric zero (keep it)
+        if isinstance(value, (int, float)) and value == 0:
+            return str(value)
+        
+        return str(value)
+
     def _get_custom_export_data(self, employees):
         """Get export data berdasarkan kategori yang dipilih."""
         data = []
@@ -700,23 +736,31 @@ class HrEmployeeExportWizard(models.TransientModel):
             row = {}
             
             if self.include_identity:
-                row['NRP'] = emp.nrp or '-'
-                row['Nama'] = emp.name or '-'
-                row['NIK'] = emp.nik or '-'
-                row['Tempat Lahir'] = emp.place_of_birth or '-'
+                row['NRP'] = self._safe_value(emp.nrp)
+                row['Nama'] = self._safe_value(emp.name)
+                row['NIK'] = self._safe_value(getattr(emp, 'nik', None))
+                row['Tempat Lahir'] = self._safe_value(emp.place_of_birth)
                 row['Tanggal Lahir'] = emp.birthday.strftime('%d/%m/%Y') if emp.birthday else '-'
-                row['Usia'] = emp.age or '-'
-                row['Gender'] = dict(emp._fields['gender'].selection).get(emp.gender, '-') if emp.gender else '-'
-                row['Agama'] = dict(emp._fields['religion'].selection).get(emp.religion, '-') if emp.religion else '-'
+                row['Usia'] = self._safe_value(getattr(emp, 'age', None))
+                # Gender - get selection label
+                gender_val = '-'
+                if emp.gender and 'gender' in emp._fields:
+                    gender_val = dict(emp._fields['gender'].selection).get(emp.gender, '-')
+                row['Gender'] = gender_val
+                # Religion - get selection label
+                religion_val = '-'
+                if hasattr(emp, 'religion') and emp.religion and 'religion' in emp._fields:
+                    religion_val = dict(emp._fields['religion'].selection).get(emp.religion, '-')
+                row['Agama'] = religion_val
             
             if self.include_employment:
-                row['Departemen'] = emp.department_id.name or '-'
-                row['Jabatan'] = emp.job_id.name or '-'
-                row['Golongan'] = emp.golongan_id.name if hasattr(emp, 'golongan_id') and emp.golongan_id else '-'
-                row['Grade'] = emp.grade_id.name if hasattr(emp, 'grade_id') and emp.grade_id else '-'
-                row['Status'] = emp.employment_status or '-'
+                row['Departemen'] = self._safe_value(emp.department_id)
+                row['Jabatan'] = self._safe_value(emp.job_id)
+                row['Golongan'] = self._safe_value(getattr(emp, 'golongan_id', None))
+                row['Grade'] = self._safe_value(getattr(emp, 'grade_id', None))
+                row['Status'] = self._safe_value(emp.employment_status)
                 row['Tanggal Masuk'] = emp.first_contract_date.strftime('%d/%m/%Y') if hasattr(emp, 'first_contract_date') and emp.first_contract_date else '-'
-                row['Masa Kerja'] = self._format_service_length(emp.service_length) if hasattr(emp, 'service_length') and emp.service_length else '-'
+                row['Masa Kerja'] = self._format_service_length(getattr(emp, 'service_length', None))
             
             data.append(row)
         
@@ -738,20 +782,28 @@ class HrEmployeeExportWizard(models.TransientModel):
         row = 1
         for emp in employees:
             sheet.write(row, 0, row, cell_format)
-            sheet.write(row, 1, emp.nrp or '-', cell_format)
-            sheet.write(row, 2, emp.name or '-', cell_format)
-            sheet.write(row, 3, emp.nik or '-', cell_format)
-            sheet.write(row, 4, emp.no_kk if hasattr(emp, 'no_kk') else '-', cell_format)
-            sheet.write(row, 5, emp.place_of_birth or '-', cell_format)
+            sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+            sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+            sheet.write(row, 3, self._safe_value(getattr(emp, 'nik', None)), cell_format)
+            sheet.write(row, 4, self._safe_value(getattr(emp, 'no_kk', None)), cell_format)
+            sheet.write(row, 5, self._safe_value(emp.place_of_birth), cell_format)
             if emp.birthday:
                 sheet.write(row, 6, emp.birthday, date_format)
             else:
                 sheet.write(row, 6, '-', cell_format)
-            sheet.write(row, 7, emp.age if hasattr(emp, 'age') else '-', cell_format)
-            sheet.write(row, 8, dict(emp._fields['gender'].selection).get(emp.gender, '-') if emp.gender else '-', cell_format)
-            sheet.write(row, 9, dict(emp._fields['religion'].selection).get(emp.religion, '-') if hasattr(emp, 'religion') and emp.religion else '-', cell_format)
-            sheet.write(row, 10, emp.blood_type if hasattr(emp, 'blood_type') else '-', cell_format)
-            sheet.write(row, 11, emp.status_kawin if hasattr(emp, 'status_kawin') else '-', cell_format)
+            sheet.write(row, 7, self._safe_value(getattr(emp, 'age', None)), cell_format)
+            # Gender - get selection label
+            gender_val = '-'
+            if emp.gender and 'gender' in emp._fields:
+                gender_val = dict(emp._fields['gender'].selection).get(emp.gender, '-')
+            sheet.write(row, 8, gender_val, cell_format)
+            # Religion - get selection label
+            religion_val = '-'
+            if hasattr(emp, 'religion') and emp.religion and 'religion' in emp._fields:
+                religion_val = dict(emp._fields['religion'].selection).get(emp.religion, '-')
+            sheet.write(row, 9, religion_val, cell_format)
+            sheet.write(row, 10, self._safe_value(getattr(emp, 'blood_type', None)), cell_format)
+            sheet.write(row, 11, self._safe_value(getattr(emp, 'status_kawin', None)), cell_format)
             row += 1
         
         # Auto-fit columns
@@ -771,20 +823,20 @@ class HrEmployeeExportWizard(models.TransientModel):
         row = 1
         for emp in employees:
             sheet.write(row, 0, row, cell_format)
-            sheet.write(row, 1, emp.nrp or '-', cell_format)
-            sheet.write(row, 2, emp.name or '-', cell_format)
-            sheet.write(row, 3, emp.department_id.name or '-', cell_format)
-            sheet.write(row, 4, emp.job_id.name or '-', cell_format)
-            sheet.write(row, 5, emp.area_kerja_id.name if hasattr(emp, 'area_kerja_id') and emp.area_kerja_id else '-', cell_format)
-            sheet.write(row, 6, emp.golongan_id.name if hasattr(emp, 'golongan_id') and emp.golongan_id else '-', cell_format)
-            sheet.write(row, 7, emp.grade_id.name if hasattr(emp, 'grade_id') and emp.grade_id else '-', cell_format)
-            sheet.write(row, 8, emp.employee_type_id.name if hasattr(emp, 'employee_type_id') and emp.employee_type_id else '-', cell_format)
-            sheet.write(row, 9, emp.employment_status or '-', cell_format)
+            sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+            sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+            sheet.write(row, 3, self._safe_value(emp.department_id), cell_format)
+            sheet.write(row, 4, self._safe_value(emp.job_id), cell_format)
+            sheet.write(row, 5, self._safe_value(getattr(emp, 'area_kerja_id', None)), cell_format)
+            sheet.write(row, 6, self._safe_value(getattr(emp, 'golongan_id', None)), cell_format)
+            sheet.write(row, 7, self._safe_value(getattr(emp, 'grade_id', None)), cell_format)
+            sheet.write(row, 8, self._safe_value(getattr(emp, 'employee_type_id', None)), cell_format)
+            sheet.write(row, 9, self._safe_value(emp.employment_status), cell_format)
             if hasattr(emp, 'first_contract_date') and emp.first_contract_date:
                 sheet.write(row, 10, emp.first_contract_date, date_format)
             else:
                 sheet.write(row, 10, '-', cell_format)
-            sheet.write(row, 11, self._format_service_length(emp.service_length, with_unit=False) if hasattr(emp, 'service_length') and emp.service_length else '-', cell_format)
+            sheet.write(row, 11, self._format_service_length(getattr(emp, 'service_length', None), with_unit=False), cell_format)
             row += 1
         
         for col, header in enumerate(headers):
@@ -804,17 +856,17 @@ class HrEmployeeExportWizard(models.TransientModel):
             if hasattr(emp, 'bpjs_ids') and emp.bpjs_ids:
                 for bpjs in emp.bpjs_ids:
                     sheet.write(row, 0, row, cell_format)
-                    sheet.write(row, 1, emp.nrp or '-', cell_format)
-                    sheet.write(row, 2, emp.name or '-', cell_format)
-                    sheet.write(row, 3, bpjs.bpjs_type or '-', cell_format)
-                    sheet.write(row, 4, bpjs.number or '-', cell_format)
-                    sheet.write(row, 5, bpjs.faskes_tk1 if hasattr(bpjs, 'faskes_tk1') else '-', cell_format)
-                    sheet.write(row, 6, bpjs.kelas if hasattr(bpjs, 'kelas') else '-', cell_format)
+                    sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+                    sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+                    sheet.write(row, 3, self._safe_value(bpjs.bpjs_type), cell_format)
+                    sheet.write(row, 4, self._safe_value(bpjs.number), cell_format)
+                    sheet.write(row, 5, self._safe_value(getattr(bpjs, 'faskes_tk1', None)), cell_format)
+                    sheet.write(row, 6, self._safe_value(getattr(bpjs, 'kelas', None)), cell_format)
                     row += 1
             else:
                 sheet.write(row, 0, row, cell_format)
-                sheet.write(row, 1, emp.nrp or '-', cell_format)
-                sheet.write(row, 2, emp.name or '-', cell_format)
+                sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+                sheet.write(row, 2, self._safe_value(emp.name), cell_format)
                 sheet.write(row, 3, '-', cell_format)
                 sheet.write(row, 4, '-', cell_format)
                 sheet.write(row, 5, '-', cell_format)
@@ -838,11 +890,11 @@ class HrEmployeeExportWizard(models.TransientModel):
             if hasattr(emp, 'education_ids') and emp.education_ids:
                 for edu in emp.education_ids:
                     sheet.write(row, 0, row, cell_format)
-                    sheet.write(row, 1, emp.nrp or '-', cell_format)
-                    sheet.write(row, 2, emp.name or '-', cell_format)
-                    sheet.write(row, 3, edu.certificate or '-', cell_format)
-                    sheet.write(row, 4, edu.study_school or '-', cell_format)
-                    sheet.write(row, 5, edu.major if hasattr(edu, 'major') else '-', cell_format)
+                    sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+                    sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+                    sheet.write(row, 3, self._safe_value(edu.certificate), cell_format)
+                    sheet.write(row, 4, self._safe_value(edu.study_school), cell_format)
+                    sheet.write(row, 5, self._safe_value(getattr(edu, 'major', None)), cell_format)
                     sheet.write(row, 6, edu.date_end.year if hasattr(edu, 'date_end') and edu.date_end else '-', cell_format)
                     row += 1
         
@@ -861,13 +913,13 @@ class HrEmployeeExportWizard(models.TransientModel):
         row = 1
         for emp in employees:
             sheet.write(row, 0, row, cell_format)
-            sheet.write(row, 1, emp.nrp or '-', cell_format)
-            sheet.write(row, 2, emp.name or '-', cell_format)
+            sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+            sheet.write(row, 2, self._safe_value(emp.name), cell_format)
             if hasattr(emp, 'payroll_id') and emp.payroll_id:
-                sheet.write(row, 3, emp.payroll_id.bank_name or '-', cell_format)
-                sheet.write(row, 4, emp.payroll_id.bank_account or '-', cell_format)
-                sheet.write(row, 5, emp.payroll_id.npwp or '-', cell_format)
-                sheet.write(row, 6, emp.payroll_id.efin if hasattr(emp.payroll_id, 'efin') else '-', cell_format)
+                sheet.write(row, 3, self._safe_value(emp.payroll_id.bank_name), cell_format)
+                sheet.write(row, 4, self._safe_value(emp.payroll_id.bank_account), cell_format)
+                sheet.write(row, 5, self._safe_value(emp.payroll_id.npwp), cell_format)
+                sheet.write(row, 6, self._safe_value(getattr(emp.payroll_id, 'efin', None)), cell_format)
             else:
                 sheet.write(row, 3, '-', cell_format)
                 sheet.write(row, 4, '-', cell_format)
@@ -891,14 +943,14 @@ class HrEmployeeExportWizard(models.TransientModel):
         row = 1
         for emp in employees:
             sheet.write(row, 0, row, cell_format)
-            sheet.write(row, 1, emp.nrp or '-', cell_format)
-            sheet.write(row, 2, emp.name or '-', cell_format)
-            sheet.write(row, 3, emp.status_kawin if hasattr(emp, 'status_kawin') else '-', cell_format)
-            sheet.write(row, 4, emp.spouse_name if hasattr(emp, 'spouse_name') else '-', cell_format)
-            sheet.write(row, 5, emp.spouse_nik if hasattr(emp, 'spouse_nik') else '-', cell_format)
-            child_count = len(emp.child_ids) if hasattr(emp, 'child_ids') else 0
+            sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+            sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+            sheet.write(row, 3, self._safe_value(getattr(emp, 'status_kawin', None)), cell_format)
+            sheet.write(row, 4, self._safe_value(getattr(emp, 'spouse_name', None)), cell_format)
+            sheet.write(row, 5, self._safe_value(getattr(emp, 'spouse_nik', None)), cell_format)
+            child_count = len(emp.child_ids) if hasattr(emp, 'child_ids') and emp.child_ids else 0
             sheet.write(row, 6, child_count, cell_format)
-            sheet.write(row, 7, emp.jlh_anggota_keluarga if hasattr(emp, 'jlh_anggota_keluarga') else '-', cell_format)
+            sheet.write(row, 7, self._safe_value(getattr(emp, 'jlh_anggota_keluarga', None)), cell_format)
             row += 1
         
         for col, header in enumerate(headers):
@@ -918,11 +970,11 @@ class HrEmployeeExportWizard(models.TransientModel):
             if hasattr(emp, 'training_certificate_ids') and emp.training_certificate_ids:
                 for training in emp.training_certificate_ids:
                     sheet.write(row, 0, row, cell_format)
-                    sheet.write(row, 1, emp.nrp or '-', cell_format)
-                    sheet.write(row, 2, emp.name or '-', cell_format)
-                    sheet.write(row, 3, training.name or '-', cell_format)
-                    sheet.write(row, 4, training.jenis_pelatihan if hasattr(training, 'jenis_pelatihan') else '-', cell_format)
-                    sheet.write(row, 5, training.metode if hasattr(training, 'metode') else '-', cell_format)
+                    sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+                    sheet.write(row, 2, self._safe_value(emp.name), cell_format)
+                    sheet.write(row, 3, self._safe_value(training.name), cell_format)
+                    sheet.write(row, 4, self._safe_value(getattr(training, 'jenis_pelatihan', None)), cell_format)
+                    sheet.write(row, 5, self._safe_value(getattr(training, 'metode', None)), cell_format)
                     if hasattr(training, 'date_start') and training.date_start:
                         sheet.write(row, 6, training.date_start, date_format)
                     else:
@@ -950,8 +1002,8 @@ class HrEmployeeExportWizard(models.TransientModel):
             if hasattr(emp, 'reward_punishment_ids') and emp.reward_punishment_ids:
                 for rp in emp.reward_punishment_ids:
                     sheet.write(row, 0, row, cell_format)
-                    sheet.write(row, 1, emp.nrp or '-', cell_format)
-                    sheet.write(row, 2, emp.name or '-', cell_format)
+                    sheet.write(row, 1, self._safe_value(emp.nrp), cell_format)
+                    sheet.write(row, 2, self._safe_value(emp.name), cell_format)
                     
                     # Tipe (reward/punishment)
                     rp_type = '-'
@@ -989,7 +1041,7 @@ class HrEmployeeExportWizard(models.TransientModel):
                         sheet.write(row, 5, '-', cell_format)
                     
                     # Keterangan
-                    sheet.write(row, 6, rp.description if hasattr(rp, 'description') and rp.description else '-', cell_format)
+                    sheet.write(row, 6, self._safe_value(getattr(rp, 'description', None)), cell_format)
                     row += 1
         
         for col, header in enumerate(headers):
